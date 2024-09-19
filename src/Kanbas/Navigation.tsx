@@ -9,6 +9,7 @@ export default function KanbasNavigation() {
             href="https://www.northeastern.edu/"
             id="wd-neu-link"
             target="_blank"
+            rel="noopener"
           >
             Northeastern
           </a>
