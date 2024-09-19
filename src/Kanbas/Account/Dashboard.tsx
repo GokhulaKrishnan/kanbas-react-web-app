@@ -21,6 +21,8 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
+        <br />
+
         <div className="wd-dashboard-course">
           <Link
             className="wd-dashboard-course-link"
@@ -36,6 +38,8 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
+        <br />
+
         <div className="wd-dashboard-course">
           <Link
             className="wd-dashboard-course-link"
@@ -49,6 +53,8 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
+        <br />
+
         <div className="wd-dashboard-course">
           <Link
             className="wd-dashboard-course-link"
@@ -62,6 +68,8 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
+        <br />
+
         <div className="wd-dashboard-course">
           <Link
             className="wd-dashboard-course-link"
@@ -75,6 +83,8 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
+        <br />
+
         <div className="wd-dashboard-course">
           <Link
             className="wd-dashboard-course-link"
@@ -90,6 +100,8 @@ export default function Dashboard() {
             </div>
           </Link>
         </div>
+        <br />
+
         <div className="wd-dashboard-course">
           <Link
             className="wd-dashboard-course-link"
@@ -102,6 +114,7 @@ export default function Dashboard() {
               <button> Go </button>
             </div>
           </Link>
+          <br />
         </div>
       </div>
     </div>

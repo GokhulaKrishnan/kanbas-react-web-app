@@ -25,10 +25,6 @@ export default function Account() {
           </td>
         </tr>
       </table>
-
-      <Signin />
-      <Profile />
-      <Signup />
     </div>
   );
 }

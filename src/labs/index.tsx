@@ -7,6 +7,7 @@ import Kanbas from "../Kanbas";
 export default function Labs() {
   return (
     <div>
+      <h1>Gokhula Krishnan Thangavel</h1>
       <h1>Labs</h1>
       <TOC />
       <Routes>
@@ -16,6 +17,10 @@ export default function Labs() {
         <Route path="Lab2" element={<Lab2 />} />
         <Route path="Lab3" element={<Lab3 />} />
       </Routes>
+      <a
+        href="https://github.com/GokhulaKrishnan/kanbas-react-web-app"
+        id="wd-github"
+      ></a>
       {/* <Lab1 /> */}
     </div>
   );
