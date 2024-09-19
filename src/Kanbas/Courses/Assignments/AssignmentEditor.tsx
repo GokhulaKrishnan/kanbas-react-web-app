@@ -15,6 +15,8 @@ export default function AssignmentEditor() {
       </textarea>
       <br />
       <table>
+        <br />
+
         <tr>
           <td align="right" valign="top">
             <label htmlFor="wd-points">Points</label>
@@ -23,6 +25,8 @@ export default function AssignmentEditor() {
             <input id="wd-points" value={100} />
           </td>
         </tr>
+        <br />
+
         <tr>
           <td align="right" valign="top">
             <label htmlFor="wd-points">Assignment Group</label>
@@ -35,6 +39,8 @@ export default function AssignmentEditor() {
             </select>
           </td>
         </tr>
+        <br />
+
         <tr>
           <td align="right" valign="top">
             <label htmlFor="wd-points">Display Grade as</label>
@@ -47,6 +53,8 @@ export default function AssignmentEditor() {
             </select>
           </td>
         </tr>
+        <br />
+
         <tr>
           <td align="right" valign="top">
             <label htmlFor="wd-points">Submission Type</label>
@@ -59,6 +67,8 @@ export default function AssignmentEditor() {
             </select>
           </td>
         </tr>
+        <br />
+
         <tr>
           <td align="right" valign="top"></td>
           <td id="wd-points">
@@ -85,6 +95,8 @@ export default function AssignmentEditor() {
             <label htmlFor="wd-chkbox-fantasy">File Uploads</label>
           </td>
         </tr>
+        <br />
+
         <tr>
           <td>Assign Assign to</td>
         </tr>
@@ -93,6 +105,8 @@ export default function AssignmentEditor() {
             <input type="text" placeholder="Everyone"></input>
           </td>
         </tr>
+        <br />
+
         <tr>
           <td>Due</td>
         </tr>
@@ -101,6 +115,8 @@ export default function AssignmentEditor() {
             <input type="date" placeholder="05 / 13 / 2024"></input>
           </td>
         </tr>
+        <br />
+
         <tr>
           <td>Available from</td>
           <td>Until</td>
@@ -113,6 +129,7 @@ export default function AssignmentEditor() {
             <input type="date" placeholder="05 / 20 / 2024"></input>
           </td>
         </tr>
+        <br />
         <hr />
         <tr>
           <td>

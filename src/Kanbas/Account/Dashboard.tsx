@@ -11,7 +11,7 @@ export default function Dashboard() {
             className="wd-dashboard-course-link"
             to="/Kanbas/Courses/1234/Home"
           >
-            <img src=".\pic\reactjs.png" width={200} />
+            <img src=".\pic\reactjs.png" alt="" width={200} />
             <div>
               <h5>CS1234 React JS</h5>
               <p className="wd-dashboard-course-title">
@@ -26,7 +26,7 @@ export default function Dashboard() {
             className="wd-dashboard-course-link"
             to="/Kanbas/Courses/1234/Home"
           >
-            <img src=".\pic\PDP.png" width={200} />
+            <img src=".\pic\PDP.png" alt="" width={200} />
             <div>
               <h5>CS7777 PDP JS</h5>
               <p className="wd-dashboard-course-title">
@@ -41,7 +41,7 @@ export default function Dashboard() {
             className="wd-dashboard-course-link"
             to="/Kanbas/Courses/1234/Home"
           >
-            <img src="\pic\Algorithms.jpeg" width={200} />
+            <img src="\pic\Algorithms.jpeg" alt="" width={200} />
             <div>
               <h5>CS5555 Algorithms</h5>
               <p className="wd-dashboard-course-title">Data Structure</p>
@@ -54,7 +54,7 @@ export default function Dashboard() {
             className="wd-dashboard-course-link"
             to="/Kanbas/Courses/1234/Home"
           >
-            <img src="\pic\Computernetwork.jpeg" width={200} />
+            <img src="\pic\Computernetwork.jpeg" alt="" width={200} />
             <div>
               <h5>CS9328 Computer Networks</h5>
               <p className="wd-dashboard-course-title">Structure of Networks</p>
@@ -67,7 +67,7 @@ export default function Dashboard() {
             className="wd-dashboard-course-link"
             to="/Kanbas/Courses/1234/Home"
           >
-            <img src=".\pic\Compilerdesign.jpeg" width={200} />
+            <img src=".\pic\Compilerdesign.jpeg" alt="" width={200} />
             <div>
               <h5>CS2398 Compiler Design</h5>
               <p className="wd-dashboard-course-title">Desgning of compilers</p>
@@ -80,7 +80,7 @@ export default function Dashboard() {
             className="wd-dashboard-course-link"
             to="/Kanbas/Courses/1234/Home"
           >
-            <img src=".\pic\fla.png" width={200} />
+            <img src=".\pic\fla.png" alt="" width={200} />
             <div>
               <h5>CS7293 FLA</h5>
               <p className="wd-dashboard-course-title">
@@ -95,7 +95,7 @@ export default function Dashboard() {
             className="wd-dashboard-course-link"
             to="/Kanbas/Courses/1234/Home"
           >
-            <img src=".\pic\c.png" width={200} />
+            <img src=".\pic\c.png" alt="" width={200} />
             <div>
               <h5>CS6798 Introduction to C</h5>
               <p className="wd-dashboard-course-title">C Programming</p>

@@ -1,5 +1,3 @@
-import { HashRouter } from "react-router-dom";
-
 export default function Lab1() {
   return (
     <div id="wd-lab1">
@@ -131,11 +129,12 @@ export default function Lab1() {
           id="wd-starship"
           width="400px"
           src="https://www.staradvertiser.com/wp-content/uploads/2021/08/web1_Starship-gap2.jpg"
+          alt=""
         />
         <br />
         Loading a local image:
         <br />
-        <img id="wd-teslabot" src=".\pic\teslabot.jpeg" height="200px" />
+        <img id="wd-teslabot" src=".\pic\teslabot.jpeg" alt="" height="200px" />
       </div>
       <div id="wd-forms">
         <h4>Form Elements</h4>

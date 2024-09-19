@@ -1,5 +1,5 @@
 import Lab1 from "./lab1";
-import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Lab2 from "./lab2";
 import Lab3 from "./lab3";
 import TOC from "./TOC";
