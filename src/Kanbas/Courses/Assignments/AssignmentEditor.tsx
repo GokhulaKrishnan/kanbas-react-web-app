@@ -1,34 +1,28 @@
 export default function AssignmentEditor() {
   return (
     <div id="wd-assignments-editor">
-      <table>
-        <td>
-          <tr>
-            <label htmlFor="wd-name">Assignment Name</label>
-          </tr>
-          <tr>
-            <input id="wd-name" value="A1 - ENV + HTML" />
-          </tr>
-        </td>
-        <br />
-        <br />
-        {/* <td> */}
-        <tr>
-          <textarea id="wd-description">
-            The assignment is available online Submit a link to the landing page
-            of your Web Application running on Netlif. The landing page should
-            include the following: Your full name and section Links to each of
-            the lab assignments Link to the Kanbas applcation Links to all
-            relevant source code repositories. The kanbas application should
-            include a link to navigate back to the landing page.
-          </textarea>
-        </tr>
-        {/* </td> */}
+      <label htmlFor="wd-name">
+        <b>Assignment Name</b>
+      </label>
+      <input
+        style={{ display: "block" }}
+        id="wd-name"
+        value="A1 - ENV + HTML"
+      />
+      <br />
+      <textarea id="wd-description">
+        The assignment is available online Submit a link to the landing page of
+        your Web Application running on Netlif. The landing page should include
+        the following: Your full name and section Links to each of the lab
+        assignments Link to the Kanbas applcation Links to all relevant source
+        code repositories. The kanbas application should include a link to
+        navigate back to the landing page.
+      </textarea>
 
-        <br />
+      <table>
         <br />
         <tr>
-          <td align="right" valign="top">
+          <td align="right">
             <label htmlFor="wd-points">Points</label>
           </td>
           <td>
