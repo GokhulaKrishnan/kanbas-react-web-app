@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router";
+import "./styles.css";
 import Account from "./Account";
 import Dashboard from "./Account/Dashboard";
 import Calendar from "./Calendar";
@@ -10,25 +11,18 @@ import Courses from "./Courses";
 export default function Kanbas() {
   return (
     <div id="wd-kanbas">
-      <h1>Kanbas</h1>
-      <table>
-        <tr>
-          <td valign="top">
-            <KanbasNavigation />
-          </td>
-          <td valign="top">
-            <Routes>
-              <Route path="/" element={<Navigate to="Account" />} />
-              <Route path="/Account/*" element={<Account />} />
-              <Route path="/Dashboard" element={<Dashboard />} />
-              <Route path="/Courses/:cid/*" element={<Courses />} />
-              <Route path="/Calendar" element={<Calendar />} />
-              <Route path="/Inbox" element={<Inbox />} />
-              <Route path="/Labs" element={<Labs />} />
-            </Routes>
-          </td>
-        </tr>
-      </table>
+      <KanbasNavigation />
+      <div className="wd-main-content-offset p-3">
+        <Routes>
+          <Route path="/" element={<Navigate to="Dashboard" />} />
+          <Route path="/Account/*" element={<Account />} />
+          <Route path="/Dashboard/*" element={<Dashboard />} />
+          <Route path="/Courses/:cid/*" element={<Courses />} />
+          <Route path="/Calendar" element={<Calendar />} />
+          <Route path="/Inbox" element={<Inbox />} />
+          <Route path="/Labs" element={<Labs />} />
+        </Routes>
+      </div>
     </div>
   );
 }
