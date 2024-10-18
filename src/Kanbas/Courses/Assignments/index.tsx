@@ -3,8 +3,15 @@ import LessonControlButtons from "../Modules/LessonControlButtons";
 import { IoEllipsisVertical } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import { PiNotePencilFill } from "react-icons/pi";
+import { useParams } from "react-router";
+import { Link } from "react-router-dom";
+import * as db from "../../Database";
 
 export default function Assignments() {
+  const { cid } = useParams();
+  const assignments = db.assignments.filter(
+    (assignment) => assignment.course === cid
+  );
   return (
     <div id="wd-assignments">
       <div className="d-flex justify-content-between align-items-center flex-wrap">
@@ -42,7 +49,7 @@ export default function Assignments() {
               <BsGripVertical className="me-2 fs-3" />
               ASSIGNMENTS
             </span>
-            <div className="ms-auto me-2 ">
+            <div className="ms-auto me-2">
               <span className="border border-grey rounded-5 p-2">
                 40% of Total
               </span>{" "}
@@ -51,75 +58,29 @@ export default function Assignments() {
             <IoEllipsisVertical className="fs-4" />
           </div>
           <ul className="wd-lessons list-group rounded-0">
-            <li className="wd-lesson wd-assignment-list-item list-group-item p-3 ps-1 d-flex align-items-start">
-              <BsGripVertical className="me-3 mt-5 fs-3" />
-              <PiNotePencilFill className="me-3 mt-5 fs-3 text-success" />
-              <div className="mt-2">
-                <a
-                  className="wd-assignment-link text-black text-decoration-none"
-                  href="#/Kanbas/Courses/1234/Assignments/1234"
-                >
-                  <b className="fs-4">A1</b>
-                </a>
-                <br />
-                <p>
-                  <span className="text-danger">Multiple Modules</span> |{" "}
-                  <b> Not available until</b> May 6 at 12:00am |
-                </p>
-                <p>
-                  <b>Due</b> May 13 at 11:59pm | 100pts
-                </p>
-              </div>
-              <div className="ms-auto">
-                <LessonControlButtons />
-              </div>
-            </li>
-            <li className="wd-lesson wd-assignment-list-item list-group-item p-3 ps-1 d-flex align-items-start">
-              <BsGripVertical className="me-3 mt-5 fs-3" />
-              <PiNotePencilFill className="me-3 mt-5 fs-3 text-success" />
-
-              <div className="mt-2">
-                <a
-                  className="wd-assignment-link text-black text-decoration-none"
-                  href="#/Kanbas/Courses/1234/Assignments/123"
-                >
-                  <b className="fs-4">A2</b>
-                </a>
-                <p>
-                  <span className="text-danger">Multiple Modules</span> |{"  "}
-                  <b>Not available until</b> May 13 at 12:00am |
-                </p>
-                <p>
-                  <b>Due</b> May 20 at 11:59pm | 100pts
-                </p>
-              </div>
-              <div className="ms-auto">
-                <LessonControlButtons />
-              </div>
-            </li>
-            <li className="wd-lesson wd-assignment-list-item list-group-item p-3 ps-1 d-flex ">
-              <BsGripVertical className="me-3 mt-5 fs-3" />
-              <PiNotePencilFill className="me-3 mt-5 fs-3 text-success" />
-
-              <div className="mt-2">
-                <a
-                  className="wd-assignment-link text-black text-decoration-none "
-                  href="#/Kanbas/Courses/1234/Assignments/123"
-                >
-                  <b className="fs-4">A3</b>
-                </a>
-                <p>
-                  <span className="text-danger">Multiple Modules</span> |{" "}
-                  <b>Not available until</b> May 20 at 12:00am |
-                </p>
-                <p className="pb-2">
-                  <b>Due</b> May 27 at 11:59pm | 100pts
-                </p>
-              </div>
-              <div className="ms-auto">
-                <LessonControlButtons />
-              </div>
-            </li>
+            {assignments.map((assignment) => (
+              <li
+                key={assignment._id}
+                className="wd-lesson wd-assignment-list-item list-group-item p-3 ps-1 d-flex align-items-start"
+              >
+                <BsGripVertical className="me-3 mt-5 fs-3" />
+                <PiNotePencilFill className="me-3 mt-5 fs-3 text-success" />
+                <div className="mt-2">
+                  <Link
+                    className="wd-assignment-link text-black text-decoration-none"
+                    to={`/Kanbas/Courses/${cid}/Assignments/${assignment._id}`} // Dynamic path with course and assignment ID
+                  >
+                    <b className="fs-4">{assignment.title}</b>
+                  </Link>
+                  <p>
+                    <b>Course ID:</b> {assignment.course}
+                  </p>
+                </div>
+                <div className="ms-auto">
+                  <LessonControlButtons />
+                </div>
+              </li>
+            ))}
           </ul>
         </li>
       </ul>

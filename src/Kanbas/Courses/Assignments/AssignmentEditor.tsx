@@ -1,15 +1,23 @@
+import { useParams, Link } from "react-router-dom";
 import { SlCalender } from "react-icons/sl";
+import * as db from "../../Database";
 
 export default function AssignmentEditor() {
+  const { aid } = useParams(); // Get both course ID and assignment ID
+
+  // Find the assignment based on both course and assignment ID
+  const assignment = db.assignments.find((a) => a._id === aid);
+
   return (
     <div id="wd-assignments-editor" className="container mt-4">
       <div className="mb-4">
-        <label htmlFor="wd-name">Assignment Name</label>
+        <label htmlFor="wd-name">Assignment Name </label>
         <input
           type="text"
           className="form-control"
           id="wd-name"
-          placeholder="A1 - ENV + HTML"
+          // value={assignment?.title || ""}
+          placeholder={assignment?.title || ""}
         />
       </div>
 
@@ -229,11 +237,113 @@ export default function AssignmentEditor() {
           </div>
           <hr />
           <div className="d-flex justify-content-end">
-            <button className="btn btn-secondary me-2">Cancel</button>
-            <button className="btn btn-danger">Save</button>
+            <Link
+              to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
+              className="btn btn-secondary me-2"
+            >
+              Cancel
+            </Link>
+            <Link
+              to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
+              className="btn btn-danger"
+            >
+              Save
+            </Link>
           </div>
         </div>
       </div>
     </div>
   );
 }
+
+// import { useParams, Link } from "react-router-dom";
+// import { SlCalender } from "react-icons/sl";
+// import * as db from "../../Database";
+
+// export default function AssignmentEditor() {
+//   const { cid, assignmentId } = useParams();
+
+//   // Find the selected assignment
+//   const assignment = db.assignments.find((a) => a._id === assignmentId);
+
+//   return (
+//     <div id="wd-assignments-editor" className="container mt-4">
+//       <div className="mb-4">
+//         <label htmlFor="wd-name">Assignment Name</label>
+//         <input
+//           type="text"
+//           className="form-control"
+//           id="wd-name"
+//           value={assignment?.title || ""}
+//           placeholder="Assignment Name"
+//         />
+//       </div>
+
+//       <div className="mb-3">
+//         <textarea
+//           id="wd-description"
+//           className="form-control"
+//           placeholder="Enter assignment description"
+//           value={assignment?.description || ""}
+//         ></textarea>
+//       </div>
+
+//       <div className="row justify-content-center">
+//         <div className="col-md-8">
+//           <div className="mb-3 row">
+//             <div className="col-3">
+//               <label htmlFor="wd-points">Points</label>
+//             </div>
+//             <div className="col-9">
+//               <input
+//                 id="wd-points"
+//                 type="number"
+//                 className="form-control"
+//                 value={assignment?.points || ""}
+//                 placeholder="100"
+//               />
+//             </div>
+//           </div>
+
+//           <div className="mb-3 row">
+//             <div className="col-3">
+//               <label htmlFor="wd-due">Due Date</label>
+//             </div>
+//             <div className="col-9">
+//               <input
+//                 id="wd-due"
+//                 type="date"
+//                 className="form-control"
+//                 value={assignment?.dueDate || ""}
+//               />
+//             </div>
+//           </div>
+
+//           <div className="mb-3 row">
+//             <div className="col-3">
+//               <label htmlFor="wd-available-from">Available From</label>
+//             </div>
+//             <div className="col-9">
+//               <input
+//                 id="wd-available-from"
+//                 type="date"
+//                 className="form-control"
+//                 value={assignment?.availableDate || ""}
+//               />
+//             </div>
+//           </div>
+
+//           <hr />
+//           <div className="d-flex justify-content-end">
+//             <Link to={`/Kanbas/Courses/${cid}/Assignments`} className="btn btn-secondary me-2">
+//               Cancel
+//             </Link>
+//             <Link to={`/Kanbas/Courses/${cid}/Assignments`} className="btn btn-danger">
+//               Save
+//             </Link>
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }

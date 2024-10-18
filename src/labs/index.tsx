@@ -16,7 +16,7 @@ export default function Labs() {
         <Route path="Kanbas" element={<Kanbas />} />
         <Route path="Lab1" element={<Lab1 />} />
         <Route path="Lab2" element={<Lab2 />} />
-        <Route path="Lab3" element={<Lab3 />} />
+        <Route path="Lab3/*" element={<Lab3 />} />
       </Routes>
       <a
         href="https://github.com/GokhulaKrishnan/kanbas-react-web-app"
