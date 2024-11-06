@@ -327,7 +327,7 @@ export default function AssignmentEditor() {
           </div>
           <hr></hr>
           <div className="d-flex justify-content-end">
-            {currentUser === "FACULTY" && (
+            {currentUser.role === "FACULTY" && (
               <>
                 <button
                   className="btn btn-secondary mt-3 me-2"

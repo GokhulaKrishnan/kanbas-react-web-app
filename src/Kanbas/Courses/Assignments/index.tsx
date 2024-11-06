@@ -107,7 +107,7 @@ export default function Assignments() {
                 </div>
                 <div className="ms-auto d-flex align-items-center">
                   <LessonControlButtons />
-                  {currentUser === "FACULTY" && (
+                  {currentUser.role === "FACULTY" && (
                     <button
                       className="btn btn-link text-danger ms-2"
                       onClick={() => handleDeleteAssignment(assignment._id)}
