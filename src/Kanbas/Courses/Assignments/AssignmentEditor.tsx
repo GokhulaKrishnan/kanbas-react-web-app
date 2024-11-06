@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { updateAssignment, addAssignment } from "./reducer";
 
 export default function AssignmentEditor() {
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+
   const { aid } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -71,7 +73,12 @@ export default function AssignmentEditor() {
           id="wd-name"
           value={title}
           placeholder="Assignment Name"
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={
+            currentUser === "FACULTY"
+              ? (e) => setTitle(e.target.value)
+              : undefined
+          }
+          readOnly={currentUser !== "FACULTY"}
         />
       </div>
 
@@ -81,7 +88,12 @@ export default function AssignmentEditor() {
           className="form-control"
           value={description}
           placeholder="Enter assignment description"
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={
+            currentUser === "FACULTY"
+              ? (e) => setDescription(e.target.value)
+              : undefined
+          }
+          readOnly={currentUser !== "FACULTY"}
         ></textarea>
       </div>
 
@@ -98,7 +110,12 @@ export default function AssignmentEditor() {
                 className="form-control col-9"
                 value={points}
                 placeholder="100"
-                onChange={(e) => setPoints(Number(e.target.value))}
+                onChange={
+                  currentUser === "FACULTY"
+                    ? (e) => setPoints(Number(e.target.value))
+                    : undefined
+                }
+                readOnly={currentUser !== "FACULTY"}
               />
             </div>
           </div>
@@ -240,7 +257,13 @@ export default function AssignmentEditor() {
                       id="wd-due"
                       className="form-control col-9"
                       value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
+                      onChange={
+                        currentUser === "FACULTY"
+                          ? (e) => setDueDate(e.target.value)
+                          : undefined
+                      }
+                      readOnly={currentUser !== "FACULTY"}
+                      // onChange={(e) => setDueDate(e.target.value)}
                       style={{
                         border: "1px solid #ced4da",
                       }}
@@ -262,7 +285,13 @@ export default function AssignmentEditor() {
                         id="wd-available-from"
                         className="form-control"
                         value={availableDate}
-                        onChange={(e) => setAvailableDate(e.target.value)}
+                        onChange={
+                          currentUser === "FACULTY"
+                            ? (e) => setAvailableDate(e.target.value)
+                            : undefined
+                        }
+                        readOnly={currentUser !== "FACULTY"}
+                        // onChange={(e) => setAvailableDate(e.target.value)}
                       />
                       <span className="input-group-text" id="addon-wrapping">
                         <i className="bi bi-calendar-date"></i>
@@ -279,7 +308,13 @@ export default function AssignmentEditor() {
                         id="wd-until"
                         className="form-control"
                         value={untilDate}
-                        onChange={(e) => setUntilDate(e.target.value)}
+                        onChange={
+                          currentUser === "FACULTY"
+                            ? (e) => setUntilDate(e.target.value)
+                            : undefined
+                        }
+                        readOnly={currentUser !== "FACULTY"}
+                        // onChange={(e) => setUntilDate(e.target.value)}
                       />
                       <span className="input-group-text" id="addon-wrapping">
                         <i className="bi bi-calendar-date"></i>
@@ -292,15 +327,19 @@ export default function AssignmentEditor() {
           </div>
           <hr></hr>
           <div className="d-flex justify-content-end">
-            <button
-              className="btn btn-secondary mt-3 me-2"
-              onClick={handleCancel}
-            >
-              Cancel
-            </button>
-            <button className="btn btn-danger mt-3" onClick={handleSave}>
-              Save
-            </button>
+            {currentUser === "FACULTY" && (
+              <>
+                <button
+                  className="btn btn-secondary mt-3 me-2"
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </button>
+                <button className="btn btn-danger mt-3" onClick={handleSave}>
+                  Save
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>

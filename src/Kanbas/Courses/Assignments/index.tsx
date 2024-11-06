@@ -14,6 +14,8 @@ export default function Assignments() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const { currentUser } = useSelector((state: any) => state.accountReducer);
+
   const { assignments } = useSelector((state: any) => state.assignmentReducer);
 
   const filteredAssignments = assignments.filter(
@@ -54,13 +56,15 @@ export default function Assignments() {
           >
             + Group
           </button>
-          <button
-            id="wd-add-assignment"
-            className="btn btn-m btn-danger me-1"
-            onClick={openAssignmentEditor}
-          >
-            + Assignment
-          </button>
+          {currentUser.role === "FACULTY" && (
+            <button
+              id="wd-add-assignment"
+              className="btn btn-m btn-danger me-1"
+              onClick={openAssignmentEditor}
+            >
+              + Assignment
+            </button>
+          )}
         </div>
       </div>
 
