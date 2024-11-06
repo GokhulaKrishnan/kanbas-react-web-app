@@ -107,12 +107,14 @@ export default function Assignments() {
                 </div>
                 <div className="ms-auto d-flex align-items-center">
                   <LessonControlButtons />
-                  <button
-                    className="btn btn-link text-danger ms-2"
-                    onClick={() => handleDeleteAssignment(assignment._id)}
-                  >
-                    <AiFillDelete className="fs-4" />
-                  </button>
+                  {currentUser === "FACULTY" && (
+                    <button
+                      className="btn btn-link text-danger ms-2"
+                      onClick={() => handleDeleteAssignment(assignment._id)}
+                    >
+                      <AiFillDelete className="fs-4" />
+                    </button>
+                  )}
                 </div>
               </li>
             ))}
