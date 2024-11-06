@@ -82,7 +82,6 @@ export default function Dashboard({
     <div id="wd-dashboard">
       <h1 id="wd-dashboard-title">Dashboard</h1>
       <hr />
-      {/* To display enrollments only to the Students */}
       {currentUser.role === "STUDENT" && (
         <button
           className="btn btn-primary float-end mb-3"
@@ -94,7 +93,6 @@ export default function Dashboard({
           Enrollments
         </button>
       )}
-      // To display Adding new course only to the Faculty
       {currentUser.role === "FACULTY" && (
         <div>
           <h5>
