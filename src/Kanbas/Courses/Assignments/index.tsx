@@ -3,20 +3,41 @@ import LessonControlButtons from "../Modules/LessonControlButtons";
 import { IoEllipsisVertical } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import { PiNotePencilFill } from "react-icons/pi";
-import { useParams } from "react-router";
+import { AiFillDelete } from "react-icons/ai";
+import { useNavigate, useParams } from "react-router";
 import { Link } from "react-router-dom";
-import * as db from "../../Database";
+import { useSelector, useDispatch } from "react-redux";
+import { deleteAssignment } from "./reducer";
 
 export default function Assignments() {
   const { cid } = useParams();
-  const assignments = db.assignments.filter(
-    (assignment) => assignment.course === cid
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+
+  const { assignments } = useSelector((state: any) => state.assignmentReducer);
+
+  const filteredAssignments = assignments.filter(
+    (assignment: any) => assignment.course === cid
   );
+
+  const openAssignmentEditor = () => {
+    navigate(`/Kanbas/Courses/${cid}/Assignments/AssignmentEditor`);
+  };
+
+  const handleDeleteAssignment = (assignmentId: any) => {
+    const confirmDelete = window.confirm(
+      "Are you sure you want to delete this assignment?"
+    );
+    if (confirmDelete) {
+      dispatch(deleteAssignment(assignmentId));
+    }
+  };
+
   return (
     <div id="wd-assignments">
       <div className="d-flex justify-content-between align-items-center flex-wrap">
         <div className="mb-2 mb-lg-0 w-40 mt-1">
-          <form className="d-flex " role="search">
+          <form className="d-flex" role="search">
             <CiSearch className="position-absolute mt-2 ms-2" />
             <input
               className="form-control h-48 w-95"
@@ -33,12 +54,16 @@ export default function Assignments() {
           >
             + Group
           </button>
-          <button id="wd-add-assignment" className="btn btn-m btn-danger me-1">
+          <button
+            id="wd-add-assignment"
+            className="btn btn-m btn-danger me-1"
+            onClick={openAssignmentEditor}
+          >
             + Assignment
           </button>
         </div>
       </div>
-      {/*  */}
+
       <ul id="wd-modules" className="list-group rounded-0 mt-5">
         <li className="wd-module list-group-item p-0 mb-5 fs-5 border-gray">
           <div
@@ -58,7 +83,7 @@ export default function Assignments() {
             <IoEllipsisVertical className="fs-4" />
           </div>
           <ul className="wd-lessons list-group rounded-0">
-            {assignments.map((assignment) => (
+            {filteredAssignments.map((assignment: any) => (
               <li
                 key={assignment._id}
                 className="wd-lesson wd-assignment-list-item list-group-item p-3 ps-1 d-flex align-items-start"
@@ -68,7 +93,7 @@ export default function Assignments() {
                 <div className="mt-2">
                   <Link
                     className="wd-assignment-link text-black text-decoration-none"
-                    to={`/Kanbas/Courses/${cid}/Assignments/${assignment._id}`} // Dynamic path with course and assignment ID
+                    to={`/Kanbas/Courses/${cid}/Assignments/${assignment._id}`}
                   >
                     <b className="fs-4">{assignment.title}</b>
                   </Link>
@@ -76,8 +101,14 @@ export default function Assignments() {
                     <b>Course ID:</b> {assignment.course}
                   </p>
                 </div>
-                <div className="ms-auto">
+                <div className="ms-auto d-flex align-items-center">
                   <LessonControlButtons />
+                  <button
+                    className="btn btn-link text-danger ms-2"
+                    onClick={() => handleDeleteAssignment(assignment._id)}
+                  >
+                    <AiFillDelete className="fs-4" />
+                  </button>
                 </div>
               </li>
             ))}

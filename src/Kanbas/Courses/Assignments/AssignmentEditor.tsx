@@ -1,12 +1,65 @@
-import { useParams, Link } from "react-router-dom";
-import { SlCalender } from "react-icons/sl";
+import { useParams, useNavigate } from "react-router-dom";
+// import { SlCalendar } from "react-icons/sl";
 import * as db from "../../Database";
+import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateAssignment, addAssignment } from "./reducer";
 
 export default function AssignmentEditor() {
-  const { aid } = useParams(); // Get both course ID and assignment ID
+  const { aid } = useParams();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { assignments } = useSelector((state: any) => state.assignmentReducer);
 
-  // Find the assignment based on both course and assignment ID
-  const assignment = db.assignments.find((a) => a._id === aid);
+  const existingAssignment = assignments.find((a: any) => a._id === aid);
+
+  const [title, setTitle] = useState(existingAssignment?.title || "");
+  const [description, setDescription] = useState(
+    existingAssignment?.description || ""
+  );
+  const [points, setPoints] = useState(existingAssignment?.points || 100);
+  const [dueDate, setDueDate] = useState(existingAssignment?.dueDate || "");
+  const [availableDate, setAvailableDate] = useState(
+    existingAssignment?.availableDate || ""
+  );
+  const [untilDate, setUntilDate] = useState(
+    existingAssignment?.untilDate || ""
+  );
+
+  const handleSave = () => {
+    const assignmentData = {
+      _id: existingAssignment?._id || new Date().getTime().toString(),
+      title,
+      description,
+      points,
+      dueDate,
+      availableDate,
+      untilDate,
+      course: existingAssignment?.course || "RS101",
+    };
+
+    const duplicateAssignment = db.assignments.find(
+      (a) => a.title === title && a._id !== existingAssignment?._id
+    );
+
+    if (duplicateAssignment) {
+      alert("An assignment with this title already exists.");
+      return;
+    }
+
+    if (existingAssignment) {
+      dispatch(updateAssignment(assignmentData));
+    } else {
+      dispatch(addAssignment(assignmentData));
+    }
+    navigate(`/Kanbas/Courses/${assignmentData.course}/Assignments`);
+  };
+
+  const handleCancel = () => {
+    navigate(
+      `/Kanbas/Courses/${existingAssignment?.course || "RS101"}/Assignments`
+    );
+  };
 
   return (
     <div id="wd-assignments-editor" className="container mt-4">
@@ -16,8 +69,9 @@ export default function AssignmentEditor() {
           type="text"
           className="form-control"
           id="wd-name"
-          // value={assignment?.title || ""}
-          placeholder={assignment?.title || ""}
+          value={title}
+          placeholder="Assignment Name"
+          onChange={(e) => setTitle(e.target.value)}
         />
       </div>
 
@@ -25,7 +79,9 @@ export default function AssignmentEditor() {
         <textarea
           id="wd-description"
           className="form-control"
-          placeholder={`The assignment is available online.\n\nSubmit a link to the landing page of your Web application running on Netlify.\n\nThe landing page should include the following:\n\n• Your full name and section\n• Links to each of the lab assignments\n• Link to the Kanbas application\n• Links to all relevant source code repositories.\n\nThe Kanbas application should include a link to navigate back to the landing page.`}
+          value={description}
+          placeholder="Enter assignment description"
+          onChange={(e) => setDescription(e.target.value)}
         ></textarea>
       </div>
 
@@ -37,10 +93,12 @@ export default function AssignmentEditor() {
             </div>
             <div className="col-9">
               <input
-                id="wd-points"
                 type="number"
-                className="form-control"
+                id="wd-points"
+                className="form-control col-9"
+                value={points}
                 placeholder="100"
+                onChange={(e) => setPoints(Number(e.target.value))}
               />
             </div>
           </div>
@@ -179,15 +237,16 @@ export default function AssignmentEditor() {
                   <div className="input-group">
                     <input
                       type="date"
-                      className="form-control"
                       id="wd-due"
-                      placeholder="2024-05-13"
+                      className="form-control col-9"
+                      value={dueDate}
+                      onChange={(e) => setDueDate(e.target.value)}
                       style={{
                         border: "1px solid #ced4da",
                       }}
                     />
                     <span className="input-group-text" id="addon-wrapping">
-                      <i className="bi bi-calendar-date"></i> <SlCalender />
+                      <i className="bi bi-calendar-date"></i>
                     </span>
                   </div>
                 </div>
@@ -200,34 +259,30 @@ export default function AssignmentEditor() {
                     <div className="input-group">
                       <input
                         type="date"
+                        id="wd-available-from"
                         className="form-control"
-                        id="wd-due"
-                        placeholder="2024-05-13"
-                        style={{
-                          border: "1px solid #ced4da",
-                        }}
+                        value={availableDate}
+                        onChange={(e) => setAvailableDate(e.target.value)}
                       />
                       <span className="input-group-text" id="addon-wrapping">
-                        <i className="bi bi-calendar-date"></i> <SlCalender />
+                        <i className="bi bi-calendar-date"></i>
                       </span>
                     </div>
                   </div>
                   <div className="col-6">
                     <label htmlFor="wd-until">
-                      <b>Until</b>
+                      <b>Available until</b>
                     </label>
                     <div className="input-group">
                       <input
                         type="date"
+                        id="wd-until"
                         className="form-control"
-                        id="wd-due"
-                        placeholder="2024-05-13"
-                        style={{
-                          border: "1px solid #ced4da",
-                        }}
+                        value={untilDate}
+                        onChange={(e) => setUntilDate(e.target.value)}
                       />
                       <span className="input-group-text" id="addon-wrapping">
-                        <i className="bi bi-calendar-date"></i> <SlCalender />
+                        <i className="bi bi-calendar-date"></i>
                       </span>
                     </div>
                   </div>
@@ -235,115 +290,20 @@ export default function AssignmentEditor() {
               </div>
             </div>
           </div>
-          <hr />
+          <hr></hr>
           <div className="d-flex justify-content-end">
-            <Link
-              to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
-              className="btn btn-secondary me-2"
+            <button
+              className="btn btn-secondary mt-3 me-2"
+              onClick={handleCancel}
             >
               Cancel
-            </Link>
-            <Link
-              to={`/Kanbas/Courses/${assignment?.course}/Assignments`}
-              className="btn btn-danger"
-            >
+            </button>
+            <button className="btn btn-danger mt-3" onClick={handleSave}>
               Save
-            </Link>
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
-// import { useParams, Link } from "react-router-dom";
-// import { SlCalender } from "react-icons/sl";
-// import * as db from "../../Database";
-
-// export default function AssignmentEditor() {
-//   const { cid, assignmentId } = useParams();
-
-//   // Find the selected assignment
-//   const assignment = db.assignments.find((a) => a._id === assignmentId);
-
-//   return (
-//     <div id="wd-assignments-editor" className="container mt-4">
-//       <div className="mb-4">
-//         <label htmlFor="wd-name">Assignment Name</label>
-//         <input
-//           type="text"
-//           className="form-control"
-//           id="wd-name"
-//           value={assignment?.title || ""}
-//           placeholder="Assignment Name"
-//         />
-//       </div>
-
-//       <div className="mb-3">
-//         <textarea
-//           id="wd-description"
-//           className="form-control"
-//           placeholder="Enter assignment description"
-//           value={assignment?.description || ""}
-//         ></textarea>
-//       </div>
-
-//       <div className="row justify-content-center">
-//         <div className="col-md-8">
-//           <div className="mb-3 row">
-//             <div className="col-3">
-//               <label htmlFor="wd-points">Points</label>
-//             </div>
-//             <div className="col-9">
-//               <input
-//                 id="wd-points"
-//                 type="number"
-//                 className="form-control"
-//                 value={assignment?.points || ""}
-//                 placeholder="100"
-//               />
-//             </div>
-//           </div>
-
-//           <div className="mb-3 row">
-//             <div className="col-3">
-//               <label htmlFor="wd-due">Due Date</label>
-//             </div>
-//             <div className="col-9">
-//               <input
-//                 id="wd-due"
-//                 type="date"
-//                 className="form-control"
-//                 value={assignment?.dueDate || ""}
-//               />
-//             </div>
-//           </div>
-
-//           <div className="mb-3 row">
-//             <div className="col-3">
-//               <label htmlFor="wd-available-from">Available From</label>
-//             </div>
-//             <div className="col-9">
-//               <input
-//                 id="wd-available-from"
-//                 type="date"
-//                 className="form-control"
-//                 value={assignment?.availableDate || ""}
-//               />
-//             </div>
-//           </div>
-
-//           <hr />
-//           <div className="d-flex justify-content-end">
-//             <Link to={`/Kanbas/Courses/${cid}/Assignments`} className="btn btn-secondary me-2">
-//               Cancel
-//             </Link>
-//             <Link to={`/Kanbas/Courses/${cid}/Assignments`} className="btn btn-danger">
-//               Save
-//             </Link>
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
