@@ -1,37 +1,14 @@
 import { BsGripVertical } from "react-icons/bs";
-import LessonControlButtons from "../Modules/LessonControlButtons";
-import { IoEllipsisVertical } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
-import { PiNotePencilFill } from "react-icons/pi";
+import { IoEllipsisVertical } from "react-icons/io5";
+import LessonControlButtons from "../Modules/LessonControlButtons";
 import { AiFillDelete } from "react-icons/ai";
-import { useNavigate, useParams } from "react-router";
-import { Link } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  deleteAssignment,
-  setAssignments,
-  updateAssignment,
-  markEditing,
-} from "./reducer";
-import * as coursesClient from "../client";
-import * as assignmentsClient from "./client";
-import { useEffect } from "react";
-// import { fetchAssignment } from "../../../labs/lab5/client";
+import { Link, useParams } from "react-router-dom";
+import { PiNotePencilFill } from "react-icons/pi";
+import { useSelector } from "react-redux";
 
-export default function Assignments() {
+export default function Quiz() {
   const { cid } = useParams();
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const fetchAssignment = async () => {
-    const assignment = await coursesClient.findAssignmentsForCourse(
-      cid as string
-    );
-    dispatch(setAssignments(assignment));
-  };
-  useEffect(() => {
-    fetchAssignment();
-  }, []);
 
   const { currentUser } = useSelector((state: any) => state.accountReducer);
 
@@ -40,20 +17,6 @@ export default function Assignments() {
   const filteredAssignments = assignments.filter(
     (assignment: any) => assignment.course === cid
   );
-
-  const openAssignmentEditor = () => {
-    navigate(`/Kanbas/Courses/${cid}/Assignments/AssignmentEditor`);
-  };
-
-  const handleDeleteAssignment = async (assignmentId: any) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this assignment?"
-    );
-    if (confirmDelete) {
-      await assignmentsClient.deleteAssignment(assignmentId);
-      dispatch(deleteAssignment(assignmentId));
-    }
-  };
 
   return (
     <div id="wd-assignments">
@@ -80,7 +43,7 @@ export default function Assignments() {
             <button
               id="wd-add-assignment"
               className="btn btn-m btn-danger me-1"
-              onClick={openAssignmentEditor}
+              //   onClick={openAssignmentEditor}
             >
               + Assignment
             </button>
@@ -98,16 +61,10 @@ export default function Assignments() {
               <BsGripVertical className="me-2 fs-3" />
               ASSIGNMENTS
             </span>
-            <div className="ms-auto me-2">
-              <span className="border border-grey rounded-5 p-2">
-                40% of Total
-              </span>{" "}
-              <button className="btn btn-lg ">+</button>
-            </div>
             <IoEllipsisVertical className="fs-4" />
           </div>
           <ul className="wd-lessons list-group rounded-0">
-            {assignments.map((assignment: any) => (
+            {filteredAssignments.map((assignment: any) => (
               <li
                 key={assignment._id}
                 className="wd-lesson wd-assignment-list-item list-group-item p-3 ps-1 d-flex align-items-start"
@@ -118,7 +75,6 @@ export default function Assignments() {
                   <Link
                     className="wd-assignment-link text-black text-decoration-none"
                     to={`/Kanbas/Courses/${cid}/Assignments/${assignment._id}`}
-                    onClick={() => markEditing(assignment._id)}
                   >
                     <b className="fs-4">{assignment.title}</b>
                   </Link>
@@ -131,7 +87,7 @@ export default function Assignments() {
                   {currentUser.role === "FACULTY" && (
                     <button
                       className="btn btn-link text-danger ms-2"
-                      onClick={() => handleDeleteAssignment(assignment._id)}
+                      //   onClick={() => handleDeleteAssignment(assignment._id)}
                     >
                       <AiFillDelete className="fs-4" />
                     </button>

@@ -3,12 +3,17 @@ import { useParams, useNavigate } from "react-router-dom";
 import * as db from "../../Database";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { updateAssignment, addAssignment } from "./reducer";
+import { updateAssignment, addAssignment, markEditing } from "./reducer";
+import * as coursesClient from "../client";
+import * as assignmentsClient from "./client";
+
+// The assignment aftre created is not updating.
 
 export default function AssignmentEditor() {
   const { currentUser } = useSelector((state: any) => state.accountReducer);
 
   const { aid } = useParams();
+  const { cid } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { assignments } = useSelector((state: any) => state.assignmentReducer);
@@ -28,16 +33,37 @@ export default function AssignmentEditor() {
     existingAssignment?.untilDate || ""
   );
 
-  const handleSave = () => {
-    const assignmentData = {
-      _id: existingAssignment?._id || new Date().getTime().toString(),
+  // const createAssignmentForCourse = async () => {};
+
+  // console.log(existingAssignment._id);
+
+  const saveAssignment = async (assignment: any) => {
+    const modAssignment = {
+      _id: existingAssignment._id || new Date().getTime().toString(),
       title,
       description,
       points,
       dueDate,
       availableDate,
       untilDate,
-      course: existingAssignment?.course || "RS101",
+      course: cid,
+    };
+
+    // console.log(modAssignment);
+    await assignmentsClient.updateAssignment(modAssignment);
+    dispatch(updateAssignment(modAssignment));
+  };
+
+  const handleSave = async () => {
+    const newAssignment = {
+      _id: new Date().getTime().toString(),
+      title,
+      description,
+      points,
+      dueDate,
+      availableDate,
+      untilDate,
+      course: cid,
     };
 
     const duplicateAssignment = db.assignments.find(
@@ -50,11 +76,20 @@ export default function AssignmentEditor() {
     }
 
     if (existingAssignment) {
-      dispatch(updateAssignment(assignmentData));
+      saveAssignment({ markEditing: false });
+
+      // dispatch(updateAssignment(newAssignment));
     } else {
-      dispatch(addAssignment(assignmentData));
+      if (!cid) return;
+
+      const assignment = await coursesClient.createAssignmentForCourse(
+        cid,
+        newAssignment
+      );
+      dispatch(addAssignment(assignment));
+      // dispatch(addAssignment(assignmentData));
     }
-    navigate(`/Kanbas/Courses/${assignmentData.course}/Assignments`);
+    navigate(`/Kanbas/Courses/${newAssignment.course}/Assignments`);
   };
 
   const handleCancel = () => {
@@ -74,11 +109,11 @@ export default function AssignmentEditor() {
           value={title}
           placeholder="Assignment Name"
           onChange={
-            currentUser === "FACULTY"
-              ? (e) => setTitle(e.target.value)
-              : undefined
+            // currentUser === "FACULTY"
+            (e) => setTitle(e.target.value)
+            // : undefined
           }
-          readOnly={currentUser !== "FACULTY"}
+          // readOnly={currentUser !== "FACULTY"}
         />
       </div>
 
@@ -89,11 +124,11 @@ export default function AssignmentEditor() {
           value={description}
           placeholder="Enter assignment description"
           onChange={
-            currentUser === "FACULTY"
-              ? (e) => setDescription(e.target.value)
-              : undefined
+            // currentUser === "FACULTY"
+            (e) => setDescription(e.target.value)
+            // : undefined
           }
-          readOnly={currentUser !== "FACULTY"}
+          // readOnly={currentUser !== "FACULTY"}
         ></textarea>
       </div>
 
@@ -111,11 +146,11 @@ export default function AssignmentEditor() {
                 value={points}
                 placeholder="100"
                 onChange={
-                  currentUser === "FACULTY"
-                    ? (e) => setPoints(Number(e.target.value))
-                    : undefined
+                  // currentUser === "FACULTY"
+                  (e) => setPoints(Number(e.target.value))
+                  // : undefined
                 }
-                readOnly={currentUser !== "FACULTY"}
+                // readOnly={currentUser !== "FACULTY"}
               />
             </div>
           </div>
@@ -336,6 +371,7 @@ export default function AssignmentEditor() {
                   Cancel
                 </button>
                 <button className="btn btn-danger mt-3" onClick={handleSave}>
+                  {" "}
                   Save
                 </button>
               </>
