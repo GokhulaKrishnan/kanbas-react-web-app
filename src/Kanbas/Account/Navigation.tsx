@@ -9,6 +9,8 @@ export default function AccountNavigation() {
         { name: "Signin", path: "Signin" },
         { name: "Signup", path: "Signup" },
       ];
+  const active = (path: string) => (pathname.includes(path) ? "active" : "");
+
   const { pathname } = useLocation();
 
   return (
@@ -25,6 +27,15 @@ export default function AccountNavigation() {
           {link.name}
         </Link>
       ))}
+      {currentUser && currentUser.role === "ADMIN" && (
+        <Link
+          to={`/Kanbas/Account/Users`}
+          className={`list-group-item ${active("Users")}`}
+        >
+          {" "}
+          Users{" "}
+        </Link>
+      )}
     </div>
   );
 }

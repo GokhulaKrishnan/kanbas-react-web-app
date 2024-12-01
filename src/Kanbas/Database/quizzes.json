@@ -1,0 +1,40 @@
+[
+  {
+    "_id": "Q101",
+    "courseId": "RS101",
+    "name": "HTML",
+    "availability": "closed",
+    "dueDate": "2024-11-01",
+    "availableDate": "2024-10-01",
+    "untilDate": "2024-12-01",
+    "published": true,
+    "points": 20,
+    "score": 20,
+    "type": "Graded Quiz",
+    "group": "Quizzes",
+    "shuffled": false,
+    "time": 30,
+    "multipleAttempts": false,
+    "description": "The quiz should be done with sincerity",
+    "questions": ["Q1011", "Q1012"]
+  },
+  {
+    "_id": "Q102",
+    "courseId": "RS101",
+    "name": "CSS Basics",
+    "availability": "available",
+    "dueDate": "2024-11-15",
+    "availableDate": "2024-10-05",
+    "untilDate": "2024-12-15",
+    "published": true,
+    "points": 30,
+    "score": 40,
+    "type": "Practice Quiz",
+    "group": "Exams",
+    "shuffled": true,
+    "time": 45,
+    "multipleAttempts": true,
+    "description": "Focus on the fundamentals of CSS.",
+    "questions": ["Q1021", "Q1022"]
+  }
+]

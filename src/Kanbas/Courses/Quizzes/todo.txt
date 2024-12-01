@@ -1,0 +1,100 @@
+1. Assign a Unique code for each quizzes
+
+
+What things to be in the database for the quizzes
+
+THINGS TO BE SHOWN IN THE QUIZZES SECTION:
+
+1. Needed Id to render the particular quiz
+2. The numberth of the quiz
+3. Title of the quiz
+4. Closed / Opened
+5. Due date
+6. Total Points  [SHOULD ADD ALL POINTS AND DISPLAY]
+7. Number of Questions [SHOULD ADD AND DISPLAY]
+8. Score if the student has attempted.[SHOULD DISPLAY ONLY FOR STUDENTS]
+9. Published or not.
+10. The course in which the quiz is.
+
+THINGS TO BE SHOWN IN THE QUIZ DETAILS SCREEN:
+
+1. We'll just show the things as dummy values.
+2. The things that actually needs to be rendered is given below.
+3. Quiz type
+4. Total points
+5. Assignment Group.
+6. Shuffle answers.
+7. Time limit.
+8. Multiple Attempts.
+
+THINGS TO BE RENDERED IN THE EDITOR SCREEN:
+
+1. This screen should be able to modify the values in the database.
+2. The values ot be updated.
+3. Quiz title
+4. Description of the quiz.
+5. Quiz type
+6. Assignment Group.
+7. Shuffle answers.
+8. Time limit.
+9. Minutes.
+10. allow multiple attempt.
+11. Assign to
+12. Due
+13. Available from`
+14. Available to
+
+
+THINGS TO BE RENDERED IN THE QUESTIONS EDITOR SCREEN
+
+1. Question number
+2. Quiz Question title
+3. Should provide an option to delete a question
+4. Clicking on that should take it to edit the quiz (Assignment editor.)
+5. Points
+6. Should provide the detail whether the quiz has been Published or not in the top right.
+
+THINGS TO BE MODIFIED IN THE QUESTION TYPE 
+
+1. Question title
+2. Question 
+3. Points
+4. Answer.
+5. For multiple choice, the options.
+
+
+
+
+1. Unique id for each quiz (See Assignment id for reference.)
+2. Opened / CLosed.
+3. Published / Not.
+4. Title
+5. Points
+6. Number of questions.
+7. Score
+8. Quiz Type
+9. Assignment Group
+10. Shuffle Answers
+11. Time Limit
+12. Multiple Attempts
+13. How Many Attempts
+14. Show Correct Answers
+15. Access Code 
+16. One Question at a Time
+17. Webcam Required
+18. Lock Questions After Answering
+19. Due date
+20. Available date
+21. Until date
+
+22. Question
+23. Answer
+24. Question type - Multiple (Only this needs possible multiple choices) / Fill in / true or false.
+
+
+
+
+THINGS TO COMPLETE
+
+1. In questionPreview, have to edit the questions. Clicking on that should take it to the appropriate question. 
+2. Added question should be displayed on the questions page.
