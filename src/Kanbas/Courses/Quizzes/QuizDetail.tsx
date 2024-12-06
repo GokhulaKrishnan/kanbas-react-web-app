@@ -237,15 +237,25 @@
 // export default Details;
 
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { updateQuiz } from "./reducerQuiz"; // Import the updateQuiz action
 import { CgShapeHalfCircle } from "react-icons/cg";
+import { findQuizzById, updateQuizz } from "./client"; // Client API
+import { useParams } from "react-router";
 
 const Details = ({ quizDetails }: { quizDetails: any }) => {
+  // const { cid } = useParams;
   const dispatch = useDispatch();
+
+  // const selectedQuiz = useSelector(
+  //   (state: any) => state.quizReducer.selectedQuiz
+  // );
+  // const quiz = selectedQuiz && selectedQuiz.length > 0 ? selectedQuiz[0] : null;
+  // console.log(selectedQuiz);
 
   // Local state for editing the quiz details
   const [details, setDetails] = useState({
+    _id: quizDetails?._id,
     name: quizDetails?.name || "",
     description: quizDetails?.description || "",
     type: quizDetails?.type || "Graded Quiz",
@@ -288,13 +298,20 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
 
   // Save the updated quiz details
   const handleSave = () => {
-    dispatch(updateQuiz({ ...quizDetails, ...details }));
+    const updatedQuiz = {
+      ...quizDetails,
+      ...details,
+    };
+
+    updateQuizz(updatedQuiz);
+    dispatch(updateQuiz(updatedQuiz));
     console.log("Quiz Details Updated:", details);
   };
 
   // Reset local state to cancel changes
   const handleCancel = () => {
     setDetails({
+      _id: quizDetails._id,
       name: quizDetails?.name || "",
       description: quizDetails?.description || "",
       type: quizDetails?.type || "Graded Quiz",
@@ -307,6 +324,7 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
       availableDate: quizDetails?.availableDate || "",
       untilDate: quizDetails?.untilDate || "",
     });
+    // navigate(`/Kanbas/Courses/${cid}/Assignments`);
     console.log("Edit Cancelled");
   };
 
@@ -496,7 +514,7 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
                       type="date"
                       id="wd-due"
                       className="form-control col-9"
-                      value={quizDetails.dueDate || ""}
+                      value={details.dueDate || ""}
                       readOnly // Make it editable if needed
                     />
                   </div>
@@ -511,7 +529,7 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
                       type="date"
                       id="wd-available-from"
                       className="form-control"
-                      value={quizDetails.availableDate || ""}
+                      value={details.availableDate || ""}
                       readOnly // Make it editable if needed
                     />
                   </div>
@@ -523,7 +541,7 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
                       type="date"
                       id="wd-until"
                       className="form-control"
-                      value={quizDetails.untilDate || ""}
+                      value={details.untilDate || ""}
                       readOnly // Make it editable if needed
                     />
                   </div>

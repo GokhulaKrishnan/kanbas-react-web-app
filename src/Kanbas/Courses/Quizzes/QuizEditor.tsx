@@ -1,15 +1,71 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { LuBan } from "react-icons/lu";
 import QuizDetail from "./QuizDetail";
 import QuizQuestions from "./QuizQuestions";
 import { useParams } from "react-router";
 import { useSelector } from "react-redux";
+import * as quizClient from "./client"; // Import the server client
+import { setQuestions } from "./QuestionEditor/reducerQuestion";
+import { useDispatch } from "react-redux";
 
 export default function QuizEditor() {
-  const quizzes = useSelector((state: any) => state.quizReducer.quizzes);
   const { quizId } = useParams();
-  const existingQuiz = quizzes.find((q: any) => q._id === quizId);
+  const dispatch = useDispatch();
+  const selectedQuiz = useSelector(
+    (state: any) => state.quizReducer.selectedQuiz
+  );
+  const quiz = selectedQuiz && selectedQuiz.length > 0 ? selectedQuiz[0] : null;
+  console.log(selectedQuiz);
+
+  // const questions = quiz.answers;
+
+  const fetchQuestion = async () => {
+    const quiz = await quizClient.findQuestionsForQuiz(quizId as string);
+    console.log("Inside fetchQuestion");
+    dispatch(setQuestions(quiz));
+  };
+  useEffect(() => {
+    fetchQuestion();
+  }, []);
+
+  // Fetch questions from Redux store
+  const questions = useSelector(
+    (state: any) => state.questionReducer.questions
+  );
+
+  const [totalPoints, setTotalPoints] = useState(quiz?.points || 0);
+
+  useEffect(() => {
+    if (questions && questions.length > 0) {
+      const pointsSum = questions.reduce(
+        (sum: number, question: any) => sum + (question.points || 0),
+        0
+      );
+      setTotalPoints(pointsSum); // Update total points
+      if (quiz) {
+        const updatedQuiz = { ...quiz, points: pointsSum };
+        quizClient.updateQuizz(updatedQuiz);
+      }
+    } else {
+      setTotalPoints(0); // Default to 0 if there are no questions
+    }
+  }, [questions]);
+
+  console.log(totalPoints);
+
+  // const fetchQuizDetails = async () => {
+  //   try {
+  //     const fetchedQuiz = await quizClient.findQuizzById(quizId as string); // Fetch quiz by ID
+  //     dispatch(setSelectedQuiz(fetchedQuiz)); // Set the fetched quiz in Redux
+  //   } catch (error) {
+  //     console.error("Failed to fetch quiz details:", error);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchQuizDetails(); // Fetch quiz details when the component loads
+  // }, [quizId]);
 
   const [activeTab, setActiveTab] = useState("Details"); // To manage the active tab
 
@@ -21,14 +77,14 @@ export default function QuizEditor() {
       <div className="d-flex justify-content-end align-items-center mb-3">
         {/* Points Section */}
         <div className="me-3">
-          <strong>Points</strong>: <span>{existingQuiz?.points || 0}</span>
+          <strong>Points</strong>: <span>{totalPoints || 0}</span>
         </div>
 
         {/* Not Published Section */}
         <div className="me-3">
           <LuBan className="me-2 text-muted" />
           <span className="text-muted">
-            {existingQuiz?.published ? "Published" : "Not Published"}
+            {quiz?.published ? "Published" : "Not Published"}
           </span>
         </div>
 
@@ -62,7 +118,7 @@ export default function QuizEditor() {
 
       {/* Conditional Rendering of Tabs Content */}
       <div className="mt-3">
-        {activeTab === "Details" && <QuizDetail quizDetails={existingQuiz} />}
+        {activeTab === "Details" && <QuizDetail quizDetails={quiz} />}
         {activeTab === "Questions" && <QuizQuestions />}
       </div>
     </div>

@@ -66,14 +66,14 @@ export default function AssignmentEditor() {
       course: cid,
     };
 
-    const duplicateAssignment = db.assignments.find(
-      (a) => a.title === title && a._id !== existingAssignment?._id
-    );
+    // const duplicateAssignment = db.assignments.find(
+    //   (a) => a.title === title && a._id !== existingAssignment?._id
+    // );
 
-    if (duplicateAssignment) {
-      alert("An assignment with this title already exists.");
-      return;
-    }
+    // if (duplicateAssignment) {
+    //   alert("An assignment with this title already exists.");
+    //   return;
+    // }
 
     if (existingAssignment) {
       saveAssignment({ markEditing: false });

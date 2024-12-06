@@ -1,28 +1,70 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import McqQuestion from "./McqQuestion"; // Import the MCQEditor component
 import TrueFalseEditor from "./TrueFalseEditor";
 import FillInTheBlankEditor from "./FillInTheBlankEditor";
 import { useParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { updateQuestion, addQuestion } from "./reducerQuestion"; // Import Redux actions
+import {
+  updateQuestion,
+  addQuestion,
+  setSelectedQuestion,
+} from "./reducerQuestion"; // Import Redux actions
+import * as questionClient from "./client";
 
 export default function QuestionEditor() {
   const dispatch = useDispatch();
   const { quesId } = useParams();
   console.log(quesId);
-
+  const [question, setQuestion] = useState<any>(null);
+  // const [question, setQuestion] = useState<any>(null);
+  // const [questionType, setQuestionType] = useState("Multiple Choice");
+  // const [points, setPoints] = useState(4);
+  const [isEditableType, setIsEditableType] = useState(true);
   // Fetch the question from the store using quesId
-  const questions = useSelector(
-    (state: any) => state.questionReducer.questions
-  );
-  const existingQuestion = questions.find((q: any) => q.questionId === quesId);
+  // const questions = useSelector(
+  //   (state: any) => state.questionReducer.questions
+  // );
+  // const existingQuestion = questions.find((q: any) => q.questionId === quesId);
+
+  // Fetch question details from the server
+  const fetchQuestionDetails = async () => {
+    try {
+      if (quesId !== "QuestionEditor") {
+        const fetchedQuestion = await questionClient.findQuestionById(
+          quesId as string
+        );
+        setQuestion(fetchedQuestion);
+        setQuestionType(fetchedQuestion.qtype || "Multiple Choice");
+        // setPoints(fetchedQuestion.points || 4);
+        setIsEditableType(false);
+      } else {
+        // For new questions, allow editing the type
+        setIsEditableType(true);
+      }
+    } catch (error) {
+      console.error("Failed to fetch question details:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuestionDetails(); // Fetch question details when the component loads
+  }, [quesId]);
+
+  // const selectedQuestion = useSelector(
+  //   (state: any) => state.questionReducer.selectedQuestion
+  // );
+
+  // const question =
+  //   selectedQuestion && selectedQuestion.length > 0
+  //     ? selectedQuestion[0]
+  //     : null;
 
   // Manage the state of question type and points
   const [questionType, setQuestionType] = useState(
-    existingQuestion?.qtype || "Multiple Choice"
+    question?.qtype || "Multiple Choice"
   );
 
-  const [points, setPoints] = useState(existingQuestion?.points || 4);
+  // const [points, setPoints] = useState(question?.points || 4);
 
   const renderQuestionType = () => {
     if (questionType === "Multiple Choice") {
@@ -34,37 +76,37 @@ export default function QuestionEditor() {
     }
   };
 
-  const handleSave = () => {
-    if (existingQuestion) {
-      // Update the question
-      dispatch(
-        updateQuestion({
-          ...existingQuestion,
-          qtype: questionType,
-          points,
-        })
-      );
-      console.log("Question Updated");
-    } else {
-      // Add a new question
-      dispatch(
-        addQuestion({
-          questionId: new Date().getTime().toString(),
-          title: "",
-          quizId: "SomeQuizId", // Replace with actual quiz ID context
-          qtype: questionType,
-          question: "",
-          points,
-          answer: [],
-        })
-      );
-      console.log("New Question Added");
-    }
-  };
+  // const handleSave = () => {
+  //   if (existingQuestion) {
+  //     // Update the question
+  //     dispatch(
+  //       updateQuestion({
+  //         ...question,
+  //         qtype: questionType,
+  //         points,
+  //       })
+  //     );
+  //     console.log("Question Updated");
+  //   } else {
+  //     // Add a new question
+  //     dispatch(
+  //       addQuestion({
+  //         questionId: new Date().getTime().toString(),
+  //         title: "",
+  //         quizId: "SomeQuizId", // Replace with actual quiz ID context
+  //         qtype: questionType,
+  //         question: "",
+  //         points,
+  //         answer: [],
+  //       })
+  //     );
+  //     console.log("New Question Added");
+  //   }
+  // };
 
-  const handleCancel = () => {
-    console.log("Edit Cancelled");
-  };
+  // const handleCancel = () => {
+  //   console.log("Edit Cancelled");
+  // };
 
   return (
     <div className="container mt-4">
@@ -81,13 +123,14 @@ export default function QuestionEditor() {
             style={{ width: "150px" }}
             value={questionType}
             onChange={(e) => setQuestionType(e.target.value)} // Update the question type
+            disabled={!isEditableType}
           >
             <option value="Multiple Choice">Multiple Choice</option>
             <option value="True/False">True/False</option>
             <option value="Short Answer">Fill In The Blank</option>
           </select>
         </div>
-        <div>
+        {/* <div>
           <label className="me-2 fw-bold">pts:</label>
           <input
             type="number"
@@ -96,7 +139,7 @@ export default function QuestionEditor() {
             value={points}
             onChange={(e) => setPoints(Number(e.target.value))} // Update the points
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Conditional Rendering Based on Question Type */}

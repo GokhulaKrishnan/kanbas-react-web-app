@@ -14,10 +14,17 @@ interface Question {
   question: string;
   points: number;
   answer: Answer[];
+  selectedQuestion: Question | null;
 }
 
-const initialState: { questions: Question[] } = {
-  questions: questionDB,
+interface QuestionState {
+  questions: Question[];
+  selectedQuestion: Question | null;
+}
+
+const initialState: QuestionState = {
+  questions: [],
+  selectedQuestion: null,
 };
 
 const questionsSlice = createSlice({
@@ -39,6 +46,15 @@ const questionsSlice = createSlice({
         (q: Question) => q.questionId !== questionId
       );
     },
+    // Set a specific quiz as the selected quiz
+    setSelectedQuestion: (state, { payload: quiz }) => {
+      state.selectedQuestion = quiz; // Store the selected quiz
+    },
+
+    // Clear the selected quiz (optional for cleanup)
+    clearSelectedQuestion: (state) => {
+      state.selectedQuestion = null; // Reset the selected quiz
+    },
     updateQuestion: (state, { payload: question }) => {
       state.questions = state.questions.map((q: Question) =>
         q.questionId === question.questionId ? question : q
@@ -47,6 +63,12 @@ const questionsSlice = createSlice({
   },
 });
 
-export const { setQuestions, addQuestion, deleteQuestion, updateQuestion } =
-  questionsSlice.actions;
+export const {
+  setQuestions,
+  addQuestion,
+  deleteQuestion,
+  updateQuestion,
+  setSelectedQuestion,
+  clearSelectedQuestion,
+} = questionsSlice.actions;
 export default questionsSlice.reducer;

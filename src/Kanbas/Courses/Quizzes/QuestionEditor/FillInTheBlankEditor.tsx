@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useParams } from "react-router";
-import { updateQuestion, addQuestion } from "./reducerQuestion"; // Import Redux actions
+import { updateQuestion, addQuestion } from "./reducerQuestion"; // Redux actions
+import * as questionClient from "./client";
+import * as quizClient from "../client";
 
 interface Answer {
   id: number;
@@ -11,35 +13,62 @@ interface Answer {
 export default function FillInTheBlankEditor() {
   const { quesId } = useParams();
   const { quizId } = useParams();
-
   const dispatch = useDispatch();
 
-  // Fetch the question from the Redux store using quesId
-  const questions = useSelector(
-    (state: any) => state.questionReducer.questions
-  );
-  const quesDetails = questions.find((q: any) => q.questionId === quesId);
+  const [question, setQuestion] = useState<any>(null);
+  const [title, setTitle] = useState("");
+  const [questionText, setQuestionText] = useState("");
+  const [points, setPoints] = useState(4);
+  const [answers, setAnswers] = useState<Answer[]>([]);
 
-  // Use local state to manage updates before saving
-  const [question, setQuestion] = useState(quesDetails?.question || "");
-  const [points, setPoints] = useState(quesDetails?.points || 4);
-  const [answers, setAnswers] = useState<Answer[]>(
-    quesDetails?.answer.map((a: any, index: number) => ({
-      id: index + 1,
-      text: a.answer || "",
-    })) || []
-  );
-  const [title, setTitle] = useState(quesDetails?.title || "");
+  // Fetch question details if editing an existing question
+  const fetchQuestionDetails = async () => {
+    try {
+      if (quesId !== "QuestionEditor") {
+        const fetchedQuestion = await questionClient.findQuestionById(
+          quesId as string
+        );
+
+        // Use the first question if response is an array
+        const actualQuestion = Array.isArray(fetchedQuestion)
+          ? fetchedQuestion[0]
+          : fetchedQuestion;
+
+        setQuestion(actualQuestion);
+        setTitle(actualQuestion.title || "");
+        setQuestionText(actualQuestion.question || "");
+        setPoints(actualQuestion.points || 4);
+        setAnswers(
+          actualQuestion.answer.map((a: any, index: number) => ({
+            id: index + 1,
+            text: a.answer || "",
+          }))
+        );
+      } else {
+        // Initialize default answers for a new question
+        setAnswers([{ id: 1, text: "" }]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch question details:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuestionDetails();
+  }, [quesId]);
 
   // Add a new answer
   const addAnswer = () => {
-    setAnswers([...answers, { id: answers.length + 1, text: "" }]);
+    setAnswers((prevAnswers) => [
+      ...prevAnswers,
+      { id: prevAnswers.length + 1, text: "" },
+    ]);
   };
 
   // Update an answer's text
   const updateAnswer = (id: number, value: string) => {
-    setAnswers(
-      answers.map((answer) =>
+    setAnswers((prevAnswers) =>
+      prevAnswers.map((answer) =>
         answer.id === id ? { ...answer, text: value } : answer
       )
     );
@@ -47,60 +76,46 @@ export default function FillInTheBlankEditor() {
 
   // Remove an answer
   const removeAnswer = (id: number) => {
-    setAnswers(answers.filter((answer) => answer.id !== id));
+    setAnswers((prevAnswers) =>
+      prevAnswers.filter((answer) => answer.id !== id)
+    );
   };
 
-  // Save or Update the question in Redux
-  const handleUpdateQuestion = () => {
-    const updatedQuestion = {
+  // Save or Update the question
+  const handleSave = async () => {
+    const newQuestion = {
       questionId:
         quesId === "QuestionEditor"
-          ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
-          : quesId, // Use the existing quesId otherwise // Generate a new ID if this is a new question
+          ? new Date().getTime().toString() // Generate a new ID for new questions
+          : quesId, // Use existing ID for updates
       title,
-      question,
-      points,
-      quizId: quizId, // Ensure quizId context
+      quizId,
       qtype: "fillIn",
-      answer: answers.map(({ text }) => ({ answer: text, isAnswer: true })), // Save all answers as valid
+      question: questionText,
+      points,
+      answer: answers.map(({ id, text }) => ({ answer: text, isAnswer: true })), // Exclude internal IDs
     };
 
-    if (quesId === "QuestionEditor") {
-      // Add a new question
-      dispatch(addQuestion(updatedQuestion));
-      console.log("New Question Added:", updatedQuestion);
-    } else {
-      // Update existing question
-      dispatch(updateQuestion(updatedQuestion));
-      console.log("Question Updated:", updatedQuestion);
+    try {
+      if (quesId === "QuestionEditor") {
+        // Create a new question
+        const createdQuestion = await quizClient.createQuestionsForQuiz(
+          newQuestion
+        );
+        dispatch(addQuestion(createdQuestion));
+        console.log("New Question Added:", createdQuestion);
+      } else {
+        // Update an existing question
+        const updatedQuestion = await questionClient.updateQuestions(
+          newQuestion
+        );
+        dispatch(updateQuestion(updatedQuestion));
+        console.log("Question Updated:", updatedQuestion);
+      }
+    } catch (error) {
+      console.error("Failed to save the question:", error);
     }
   };
-
-  // // Handle Save or Update
-  // const handleSave = () => {
-  //   const newQuestion = {
-  //     questionId:
-  //       quesId === "QuestionEditor"
-  //         ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
-  //         : quesId, // Use the existing quesId otherwise // Generate a new ID if this is a new question
-  //     title,
-  //     quizId: quizId, // Replace with actual quizId context
-  //     qtype: "multipleChoice",
-  //     question: questionText,
-  //     points: quesDetails?.points || 4,
-  //     answer: options.map(({ ...rest }) => rest), // Remove internal ID before saving
-  //   };
-
-  //   if (quesId === "QuestionEditor") {
-  //     // Add a new question
-  //     dispatch(addQuestion(newQuestion));
-  //     console.log("New Question Added:", newQuestion);
-  //   } else {
-  //     // Update existing question
-  //     dispatch(updateQuestion(newQuestion));
-  //     console.log("Question Updated:", newQuestion);
-  //   }
-  // };
 
   const handleCancel = () => {
     console.log("Edit Cancelled");
@@ -143,8 +158,8 @@ export default function FillInTheBlankEditor() {
         <textarea
           className="form-control"
           rows={3}
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
+          value={questionText}
+          onChange={(e) => setQuestionText(e.target.value)}
           placeholder="Enter your question here..."
         ></textarea>
       </div>
@@ -182,7 +197,7 @@ export default function FillInTheBlankEditor() {
         <button className="btn btn-secondary me-2" onClick={handleCancel}>
           Cancel
         </button>
-        <button className="btn btn-danger" onClick={handleUpdateQuestion}>
+        <button className="btn btn-danger" onClick={handleSave}>
           Save Question
         </button>
       </div>

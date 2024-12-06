@@ -98,3 +98,4 @@ THINGS TO COMPLETE
 
 1. In questionPreview, have to edit the questions. Clicking on that should take it to the appropriate question. 
 2. Added question should be displayed on the questions page.
+3. If needed implement cancel button in QuizDetail.

@@ -1,24 +1,38 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { MdArrowDropDown } from "react-icons/md";
 import { SlQuestion } from "react-icons/sl";
 import { useSelector, useDispatch } from "react-redux";
 import { deleteQuestion } from "./QuestionEditor/reducerQuestion"; // Import the deleteQuestion action from the questionReducer
+import * as quizClient from "./client";
+import { setQuestions } from "./QuestionEditor/reducerQuestion";
+import * as questionClient from "./QuestionEditor/client";
 
 const QuizQuestions = () => {
   const { cid, quizId } = useParams(); // Get course and quiz IDs from the route params
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
+  const fetchQuestion = async () => {
+    const quiz = await quizClient.findQuestionsForQuiz(quizId as string);
+    console.log("Inside fetchQuestion");
+    dispatch(setQuestions(quiz));
+  };
+  useEffect(() => {
+    fetchQuestion();
+  }, []);
+
   // Fetch questions from Redux store
   const questions = useSelector(
     (state: any) => state.questionReducer.questions
   );
 
-  // Filter questions based on the current quizId
-  const filteredQuestions = questions.filter(
-    (question: any) => question.quizId === quizId
-  );
+  // const { questions } = useSelector((state: any) => state.quizReducer);
+
+  // // Filter questions based on the current quizId
+  // const filteredQuestions = questions.filter(
+  //   (question: any) => question.quizId === quizId
+  // );
 
   const handleAddClick = () => {
     navigate(
@@ -27,10 +41,11 @@ const QuizQuestions = () => {
   };
 
   const handleDeleteClick = (questionId: string) => {
+    questionClient.deleteQuestion(questionId);
     dispatch(deleteQuestion(questionId)); // Dispatch the delete action
   };
 
-  if (filteredQuestions.length === 0) {
+  if (questions.length === 0) {
     return <p>No questions found for this quiz!</p>; // Show this if no questions are found
   }
 
@@ -60,7 +75,7 @@ const QuizQuestions = () => {
           </div>
           <ul className="wd-lessons list-group rounded-0">
             {/* Map over the filtered questions */}
-            {filteredQuestions.map((question: any, index: number) => (
+            {questions.map((question: any, index: number) => (
               <li
                 key={question.questionId}
                 className="wd-lesson wd-assignment-list-item list-group-item p-3 ps-1 d-flex align-items-start"

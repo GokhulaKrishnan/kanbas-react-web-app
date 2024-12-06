@@ -1,41 +1,81 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuestion, addQuestion } from "./reducerQuestion"; // Import Redux actions
+import * as questionClient from "./client";
+import * as quizClient from "../client";
+
+interface Option {
+  id: number;
+  answer: string;
+  isAnswer: boolean;
+}
 
 export default function McqQuestion() {
   const { quesId } = useParams();
   const { quizId } = useParams();
   const dispatch = useDispatch();
-  // console.log(quesId);
-  // Fetch the question from the Redux store using quesId
-  const questions = useSelector(
-    (state: any) => state.questionReducer.questions
-  );
-  const quesDetails = questions.find((q: any) => q.questionId === quesId);
 
-  // Use state to manage local updates before saving
-  const [title, setTitle] = useState(quesDetails?.title || "");
-  const [questionText, setQuestionText] = useState(quesDetails?.question || "");
-  const [options, setOptions] = useState(
-    quesDetails?.answer.map((opt: any, index: number) => ({
-      ...opt,
-      id: index + 1,
-    })) || []
-  );
+  const [question, setQuestion] = useState<any>(null);
+  const [title, setTitle] = useState("");
+  const [questionText, setQuestionText] = useState("");
+  const [options, setOptions] = useState<Option[]>([]); // Explicitly define the type of options
+  const [points, setPoints] = useState(0);
+
+  // Fetch question details if editing an existing question
+  const fetchQuestionDetails = async () => {
+    try {
+      if (quesId !== "QuestionEditor") {
+        const fetchedQuestion = await questionClient.findQuestionById(
+          quesId as string
+        );
+
+        // Extract the first question if the response is an array
+        const actualQuestion = Array.isArray(fetchedQuestion)
+          ? fetchedQuestion[0]
+          : fetchedQuestion;
+
+        setQuestion(actualQuestion);
+        setPoints(actualQuestion.points || 0);
+        setTitle(actualQuestion.title || "");
+        setQuestionText(actualQuestion.question || "");
+        setOptions(
+          actualQuestion.answer.map((opt: any, index: number) => ({
+            id: index + 1,
+            answer: opt.answer || "",
+            isAnswer: opt.isAnswer || false,
+          }))
+        );
+      } else {
+        // Initialize default options for a new question
+        setOptions([
+          { id: 1, answer: "", isAnswer: false },
+          { id: 2, answer: "", isAnswer: false },
+        ]);
+      }
+    } catch (error) {
+      console.error("Failed to fetch question details:", error);
+    }
+  };
+
+  console.log(question);
+
+  useEffect(() => {
+    fetchQuestionDetails();
+  }, [quesId]);
 
   // Add a new answer option
   const addAnswer = () => {
-    setOptions([
-      ...options,
-      { id: options.length + 1, answer: "", isAnswer: false },
+    setOptions((prevOptions) => [
+      ...prevOptions,
+      { id: prevOptions.length + 1, answer: "", isAnswer: false },
     ]);
   };
 
   // Update an answer's text
   const updateAnswer = (id: number, text: string) => {
-    setOptions(
-      options.map((option: any) =>
+    setOptions((prevOptions) =>
+      prevOptions.map((option) =>
         option.id === id ? { ...option, answer: text } : option
       )
     );
@@ -43,8 +83,8 @@ export default function McqQuestion() {
 
   // Mark an answer as correct
   const markCorrect = (id: number) => {
-    setOptions(
-      options.map((option: any) =>
+    setOptions((prevOptions) =>
+      prevOptions.map((option) =>
         option.id === id
           ? { ...option, isAnswer: true }
           : { ...option, isAnswer: false }
@@ -54,78 +94,46 @@ export default function McqQuestion() {
 
   // Remove an answer
   const removeAnswer = (id: number) => {
-    setOptions(options.filter((option: any) => option.id !== id));
+    setOptions((prevOptions) =>
+      prevOptions.filter((option) => option.id !== id)
+    );
   };
 
   // Handle Save or Update
-  const handleSave = () => {
+  const handleSave = async () => {
     const newQuestion = {
       questionId:
         quesId === "QuestionEditor"
           ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
-          : quesId, // Use the existing quesId otherwise // Generate a new ID if this is a new question
+          : quesId, // Use the existing ID for updates
       title,
-      quizId: quizId, // Replace with actual quizId context
+      quizId,
       qtype: "multipleChoice",
       question: questionText,
-      points: quesDetails?.points || 4,
-      answer: options.map(({ ...rest }) => rest), // Remove internal ID before saving
+      points: points || 4,
+      answer: options.map(({ id, ...rest }) => rest), // Exclude internal IDs
     };
 
-    if (quesId === "QuestionEditor") {
-      // Add a new question
-      dispatch(addQuestion(newQuestion));
-      console.log("New Question Added:", newQuestion);
-    } else {
-      // Update existing question
-      dispatch(updateQuestion(newQuestion));
-      console.log("Question Updated:", newQuestion);
+    try {
+      if (quesId === "QuestionEditor") {
+        // Create a new question
+        const createdQuestion = await quizClient.createQuestionsForQuiz(
+          newQuestion
+        );
+        dispatch(addQuestion(createdQuestion));
+        console.log("New Question Added:", createdQuestion);
+      } else {
+        // Update an existing question
+        const updatedQuestion = await questionClient.updateQuestions(
+          newQuestion
+        );
+        dispatch(updateQuestion(updatedQuestion));
+        console.log("Question Updated:", updatedQuestion);
+      }
+    } catch (error) {
+      console.error("Failed to save the question:", error);
     }
   };
-
-  // const handleSave = async () => {
-  //   const newAssignment = {
-  //     _id: new Date().getTime().toString(),
-  //     title,
-  //     description,
-  //     points,
-  //     dueDate,
-  //     availableDate,
-  //     untilDate,
-  //     course: cid,
-  //   };
-
-  //   const duplicateAssignment = db.assignments.find(
-  //     (a) => a.title === title && a._id !== existingAssignment?._id
-  //   );
-
-  //   if (duplicateAssignment) {
-  //     alert("An assignment with this title already exists.");
-  //     return;
-  //   }
-
-  //   if (existingAssignment) {
-  //     saveAssignment({ markEditing: false });
-
-  //     // dispatch(updateAssignment(newAssignment));
-  //   } else {
-  //     if (!cid) return;
-
-  //     const assignment = await coursesClient.createAssignmentForCourse(
-  //       cid,
-  //       newAssignment
-  //     );
-  //     dispatch(addAssignment(assignment));
-  //     // dispatch(addAssignment(assignmentData));
-  //   }
-  //   navigate(`/Kanbas/Courses/${newAssignment.course}/Assignments`);
-  // };
-
-  // const handleCancel = () => {
-  //   navigate(
-  //     `/Kanbas/Courses/${existingAssignment?.course || "RS101"}/Assignments`
-  //   );
-  // };
 
   const handleCancel = () => {
     console.log("Edit Cancelled");
@@ -134,15 +142,27 @@ export default function McqQuestion() {
   return (
     <div className="container mt-4">
       {/* Title Input */}
+      {/* Title and Points Input */}
       <div className="d-flex justify-content-between align-items-center mb-3">
         <input
           type="text"
-          className="form-control me-2"
-          style={{ width: "60%" }}
+          className="form-control me-3"
+          style={{ width: "70%" }}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Enter the title"
         />
+        <div className="d-flex align-items-center">
+          <label className="me-2 fw-bold">Points:</label>
+          <input
+            type="number"
+            className="form-control"
+            style={{ width: "100px" }}
+            value={points}
+            onChange={(e) => setPoints(Number(e.target.value))}
+            placeholder="0"
+          />
+        </div>
       </div>
 
       {/* Question Instructions */}

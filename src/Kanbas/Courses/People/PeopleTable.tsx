@@ -1,17 +1,48 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FaUserCircle } from "react-icons/fa";
 // import { useParams } from "react-router-dom";
 // import * as db from "../../Database";
 import * as client from "../../Account/client";
 import PeopleDetails from "./Details";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+// import * as userClient from "../Account/client";
+import * as userClient from "../../Account/client";
+import * as courseClient from "../client";
 
 export default function PeopleTable({ users = [] }: { users?: any[] }) {
-  // const { cid } = useParams();
+  const { cid } = useParams();
   // const { users, enrollments } = db;
+  // console.log(users);
+
+  const { currentUser } = useSelector((state: any) => state.accountReducer); // Get current user
+  // console.log(cid);
+  // const { cid } = useParams(); // Get course ID from URL
+
+  const [user, setUsers] = useState<any[]>([]); // State to hold user's courses
+  const [loading, setLoading] = useState<boolean>(true); // State to track loading status
+  // console.log(user);
+  // Fetch courses for the current user
+  const findUsersCourse = async () => {
+    try {
+      const userCourses = await courseClient.findUsersForCourse(cid);
+      setUsers(userCourses);
+    } catch (error) {
+      console.error("Error fetching user courses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch user's courses when the component mounts or the user changes
+  useEffect(() => {
+    if (cid) {
+      findUsersCourse();
+    }
+  }, [cid]);
   return (
     <div id="wd-people-table">
-      <PeopleDetails />
+      {/* <PeopleDetails /> */}
       <table className="table table-striped">
         <thead>
           <tr>
@@ -24,7 +55,7 @@ export default function PeopleTable({ users = [] }: { users?: any[] }) {
           </tr>
         </thead>
         <tbody>
-          {users
+          {user
             // .filter((usr) =>
             //   enrollments.some(
             //     (enrollment) =>

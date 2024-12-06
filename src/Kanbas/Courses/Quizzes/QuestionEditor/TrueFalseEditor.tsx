@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch } from "react-redux";
 import { useParams } from "react-router";
-import { updateQuestion, addQuestion } from "./reducerQuestion"; // Import Redux actions
+import { updateQuestion, addQuestion } from "./reducerQuestion"; // Redux actions
+import * as questionClient from "./client";
+import * as quizClient from "../client";
 
 export default function TrueFalseEditor() {
   const { quesId } = useParams();
@@ -9,79 +11,86 @@ export default function TrueFalseEditor() {
 
   const dispatch = useDispatch();
 
-  // Fetch the question from the Redux store
-  const questions = useSelector(
-    (state: any) => state.questionReducer.questions
-  );
-  const quesDetails = questions.find((q: any) => q.questionId === quesId);
+  const [question, setQuestion] = useState<any>(null);
+  const [title, setTitle] = useState("");
+  const [questionText, setQuestionText] = useState("");
+  const [points, setPoints] = useState(3);
+  const [selectedAnswer, setSelectedAnswer] = useState("True");
 
-  // Set initial states based on the question data
-  const [question, setQuestion] = useState(quesDetails?.question || "");
-  const [title, setTitle] = useState(quesDetails?.title || "");
-  const [points, setPoints] = useState(quesDetails?.points || 3);
-  const [selectedAnswer, setSelectedAnswer] = useState(
-    quesDetails?.answer[0]?.isAnswer ? "True" : "False"
-  );
+  // Fetch question details if editing an existing question
+  const fetchQuestionDetails = async () => {
+    try {
+      if (quesId !== "QuestionEditor") {
+        const fetchedQuestion = await questionClient.findQuestionById(
+          quesId as string
+        );
+
+        // Use the first question if response is an array
+        const actualQuestion = Array.isArray(fetchedQuestion)
+          ? fetchedQuestion[0]
+          : fetchedQuestion;
+
+        setQuestion(actualQuestion);
+        setTitle(actualQuestion.title || "");
+        setQuestionText(actualQuestion.question || "");
+        setPoints(actualQuestion.points || 3);
+        setSelectedAnswer(
+          actualQuestion.answer.find((a: any) => a.isAnswer)?.answer || "True"
+        );
+      }
+    } catch (error) {
+      console.error("Failed to fetch question details:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchQuestionDetails();
+  }, [quesId]);
 
   // Handle answer selection
   const handleAnswerSelection = (answer: string) => {
     setSelectedAnswer(answer);
   };
 
-  // Update or Add Question in Redux
-  const handleUpdateQuestion = () => {
-    const updatedQuestion = {
+  // Save or Update the question
+  const handleSave = async () => {
+    const newQuestion = {
       questionId:
         quesId === "QuestionEditor"
           ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
-          : quesId, // Use the existing quesId otherwise
+          : quesId, // Use the existing ID for updates
       title,
-      question,
+      quizId,
+      qtype: "true/false",
+      question: questionText,
       points,
-      quizId: quizId, // Ensure quizId context
-      qtype: "true / false",
       answer: [
         { answer: "True", isAnswer: selectedAnswer === "True" },
         { answer: "False", isAnswer: selectedAnswer === "False" },
       ],
     };
-    console.log(updatedQuestion);
-    if (quesId === "QuestionEditor") {
-      // Add a new question
-      dispatch(addQuestion(updatedQuestion));
-      console.log("New Question Added:", updatedQuestion);
-    } else {
-      // Add new question
-      dispatch(updateQuestion(updatedQuestion));
-      console.log("Updated Question:", updatedQuestion);
+
+    try {
+      if (quesId === "QuestionEditor") {
+        // Create a new question
+        const createdQuestion = await quizClient.createQuestionsForQuiz(
+          newQuestion
+        );
+        dispatch(addQuestion(createdQuestion));
+        console.log("New Question Added:", createdQuestion);
+      } else {
+        // Update an existing question
+        const updatedQuestion = await questionClient.updateQuestions(
+          newQuestion
+        );
+        dispatch(updateQuestion(updatedQuestion));
+        console.log("Question Updated:", updatedQuestion);
+      }
+    } catch (error) {
+      console.error("Failed to save the question:", error);
     }
   };
 
-  // Save or Update the question in Redux
-  // const handleUpdateQuestion = () => {
-  //   const updatedQuestion = {
-  //     questionId:
-  //       quesId === "QuestionEditor"
-  //         ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
-  //         : quesId, // Use the existing quesId otherwise // Generate a new ID if this is a new question
-  //     title,
-  //     question,
-  //     points,
-  //     quizId: quizId, // Ensure quizId context
-  //     qtype: "fillIn",
-  //     answer: answers.map(({ text }) => ({ answer: text, isAnswer: true })), // Save all answers as valid
-  //   };
-
-  //   if (quesId === "QuestionEditor") {
-  //     // Add a new question
-  //     dispatch(addQuestion(updatedQuestion));
-  //     console.log("New Question Added:", updatedQuestion);
-  //   } else {
-  //     // Update existing question
-  //     dispatch(updateQuestion(updatedQuestion));
-  //     console.log("Question Updated:", updatedQuestion);
-  //   }
-  // };
   const handleCancel = () => {
     console.log("Edit Cancelled");
   };
@@ -122,8 +131,8 @@ export default function TrueFalseEditor() {
         <textarea
           className="form-control"
           rows={3}
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
+          value={questionText}
+          onChange={(e) => setQuestionText(e.target.value)}
           placeholder="Enter your question here..."
         ></textarea>
       </div>
@@ -187,7 +196,7 @@ export default function TrueFalseEditor() {
         <button className="btn btn-secondary me-2" onClick={handleCancel}>
           Cancel
         </button>
-        <button className="btn btn-danger" onClick={handleUpdateQuestion}>
+        <button className="btn btn-danger" onClick={handleSave}>
           Save Question
         </button>
       </div>

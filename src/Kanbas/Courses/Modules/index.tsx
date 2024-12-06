@@ -26,7 +26,7 @@ export default function Modules() {
     dispatch(updateModule(module));
   };
 
-  const removeModule = async (moduleId: string) => {
+  const removeModule = async (moduleId: any) => {
     await modulesClient.deleteModule(moduleId);
     dispatch(deleteModule(moduleId));
   };

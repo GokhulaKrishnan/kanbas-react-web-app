@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "react-router";
 // import PeopleTable from "../Courses/People/Table";
-import PeopleTable from "../Courses/People/PeopleTable";
+import PeopleTable from "../Courses/People/Table";
 import * as client from "./client";
 import { FaPlus } from "react-icons/fa";
 export default function Users() {
@@ -43,6 +43,7 @@ export default function Users() {
   };
 
   const { uid } = useParams();
+
   const fetchUsers = async () => {
     const users = await client.findAllUsers();
     setUsers(users);
@@ -50,6 +51,8 @@ export default function Users() {
   useEffect(() => {
     fetchUsers();
   }, [uid]);
+
+  console.log(users);
   return (
     <div>
       <button
