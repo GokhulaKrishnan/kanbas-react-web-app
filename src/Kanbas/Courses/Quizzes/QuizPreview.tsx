@@ -28,6 +28,7 @@ interface Attempt {
 
 export default function QuizPreview() {
   const { quizId } = useParams();
+  // const { quesId } = useParams();
   const { attemptId } = useParams();
   const navigate = useNavigate();
 
@@ -52,6 +53,7 @@ export default function QuizPreview() {
   const [existingAttempt, setExistingAttempt] = useState<Attempt[]>([]);
   const [disable, setDisable] = useState(false);
   const [back, setBack] = useState(false);
+  const [quesId, setQuesId] = useState();
   let [att, setAtt] = useState<number | null>(null);
   useEffect(() => {
     if (quiz) {
@@ -272,6 +274,9 @@ export default function QuizPreview() {
   // console.log(score);
 
   const handleEditQuiz = () => {
+    navigate(
+      `/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit/Questions/${quesId}`
+    );
     console.log("Editing Quiz");
   };
 
@@ -284,6 +289,7 @@ export default function QuizPreview() {
     const handleAnswerChange = (questionId: string, selectedAnswer: string) => {
       console.log(disable);
       if (disable) return;
+      setQuesId(question._id);
       setAnswers((prevAnswers) => {
         // Find if the question already has an answer
         const questionIndex = prevAnswers.findIndex(
@@ -595,7 +601,7 @@ export default function QuizPreview() {
             </button>
           )}
         </div> */}
-        {currentUser.role === "ADMIN" && (
+        {currentUser.role === "FACULTY" && (
           <button
             className="btn btn-link text-decoration-none"
             onClick={handleEditQuiz}
