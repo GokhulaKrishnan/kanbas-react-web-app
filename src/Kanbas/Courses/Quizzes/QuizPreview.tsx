@@ -274,9 +274,9 @@ export default function QuizPreview() {
   // console.log(score);
 
   const handleEditQuiz = () => {
-    navigate(
-      `/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit/Questions/${quesId}`
-    );
+    // navigate(
+    //   `/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit/Questions/${quesId}`
+    // );
     console.log("Editing Quiz");
   };
 
