@@ -7,7 +7,24 @@ import * as quizClient from "./client"; // Import the server client
 import * as coursesClient from "../client";
 import { setQuizzes, setSelectedQuiz } from "./reducerQuiz";
 
+interface Attempt {
+  _id: string;
+  quizId: string;
+  userId: string;
+  answers: Answer[];
+  timestamp: string;
+  score: number;
+}
+
+interface Answer {
+  questionId: string;
+  answer: string[]; // The answer is always an array of strings
+}
+
 export default function QuizDetails({ role = "faculty" }) {
+  const { currentUser } = useSelector((state: any) => state.accountReducer); // Get current user
+  console.log(currentUser);
+  const [userAttempts, setUserAttempts] = useState<Attempt[]>([]);
   // const navigate = useNavigate();
   // const { cid, quizId } = useParams(); // Get course ID and quiz ID from route params
   // const dispatch = useDispatch();
@@ -49,12 +66,37 @@ export default function QuizDetails({ role = "faculty" }) {
   const { cid } = useParams();
   const { quizId } = useParams();
   const dispatch = useDispatch();
+
+  // Here we need to display retest and See last attempt if already the user attempted the quiz.
+  //  If the user does not attempted the quiz we have to show the start quiz button
+
+  // To ckeck if the user already attempted the quiz we can get the last attempted information from the db
+  const fetchAttempts = async () => {
+    try {
+      const userId = currentUser._id; // Replace with actual user ID
+      const attempts = await quizClient.fetchUserAttempts(
+        quizId as string,
+        userId
+      );
+      setUserAttempts(attempts);
+    } catch (error) {
+      console.error("Failed to fetch attempts:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAttempts();
+  }, []);
+
+  // Now we need to
+  console.log(userAttempts);
   // const existingQuiz = quizzes.find((q) => q._id === quizId);
 
   // Fetch quiz details and set it in Redux
   const fetchQuizDetails = async () => {
     try {
       const fetchedQuiz = await quizClient.findQuizzById(quizId as string); // Fetch quiz by ID
+      console.log(fetchedQuiz);
       dispatch(setSelectedQuiz(fetchedQuiz)); // Set the fetched quiz in Redux
     } catch (error) {
       console.error("Failed to fetch quiz details:", error);
@@ -65,13 +107,11 @@ export default function QuizDetails({ role = "faculty" }) {
     fetchQuizDetails(); // Fetch quiz details when the component loads
   }, [quizId]);
 
-  const selectedQuiz = useSelector(
-    (state: any) => state.quizReducer.selectedQuiz
-  );
+  const quiz = useSelector((state: any) => state.quizReducer.selectedQuiz);
 
-  const quiz = selectedQuiz && selectedQuiz.length > 0 ? selectedQuiz[0] : null;
+  // const quiz = selectedQuiz && selectedQuiz.length > 0 ? selectedQuiz[0] : null;
 
-  console.log(selectedQuiz);
+  console.log(quiz);
 
   // Show loading or fallback if quiz is not yet loaded
   if (!quiz) {
@@ -129,32 +169,88 @@ export default function QuizDetails({ role = "faculty" }) {
     navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}/Preview`);
   };
 
+  const handlePreviewAttempt = () => {
+    navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}/${userAttempts[0]._id}`);
+  };
+
   return (
     <div className="container mt-4">
       {/* Button Section */}
       <div className="d-flex justify-content-center">
-        <button
-          className="border p-1 pe-2 ps-2 me-2 rounded bg-light"
-          onClick={handlePreviewClick}
-        >
-          Preview
-        </button>
-        <button
-          className="border p-1 pe-3 ps-2 rounded bg-light"
-          onClick={handleEditClick}
-        >
-          {" "}
-          <TiPencil className="me-1" />
-          Edit
-        </button>
+        {(currentUser.role === "STUDENT" || currentUser.role === "TA") &&
+          (userAttempts.length > 0 ? (
+            <>
+              <button
+                className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
+                onClick={handlePreviewClick}
+              >
+                Retest
+              </button>
+              <button
+                className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
+                onClick={handlePreviewAttempt}
+              >
+                Preview
+              </button>
+            </>
+          ) : (
+            <button
+              className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
+              onClick={handlePreviewClick}
+            >
+              Start Quiz
+            </button>
+          ))}
+
+        {/* For FACULTY or ADMIN */}
+        {(currentUser.role === "FACULTY" || currentUser.role === "ADMIN") &&
+          (userAttempts.length > 0 ? (
+            <>
+              <button
+                className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
+                onClick={handlePreviewClick}
+              >
+                Test
+              </button>
+              <button
+                className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
+                onClick={handlePreviewAttempt}
+              >
+                Preview
+              </button>
+              <button
+                className="border p-1 pe-4 ps-3 rounded btn btn-primary"
+                onClick={handleEditClick}
+              >
+                <TiPencil className="me-1" />
+                Edit
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
+                onClick={handlePreviewClick}
+              >
+                Test
+              </button>
+              <button
+                className="border p-1 pe-4 ps-3 rounded btn btn-primary"
+                onClick={handleEditClick}
+              >
+                <TiPencil className="me-1" />
+                Edit
+              </button>
+            </>
+          ))}
       </div>
 
       {/* Header Section */}
       <div className="d-flex justify-content-between align-items-center">
         <h3 className="mb-4">{quiz.name}</h3>
-        {role === "student" && (
+        {/* {role === "student" && (
           <button className="btn btn-primary">Start Quiz</button>
-        )}
+        )} */}
       </div>
 
       {/* Quiz Details Section */}

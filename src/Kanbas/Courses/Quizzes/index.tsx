@@ -7,6 +7,7 @@ import * as quizClient from "./client";
 import * as coursesClient from "../client";
 import { setQuizzes, deleteQuiz } from "./reducerQuiz";
 import { useDispatch, useSelector } from "react-redux";
+// import { ObjectId } from "mongodb";
 
 export default function Quiz() {
   const { cid } = useParams(); // Get course ID from the route params
@@ -57,8 +58,13 @@ export default function Quiz() {
   //   );
   // };
 
-  const openQuizDetails = () => {
-    navigate(`/Kanbas/Courses/${cid}/Quizzes/QuizDetails`);
+  const openQuizDetails = async () => {
+    // const response = await quizClient.getId();
+    // const id = response.id;
+    // console.log(id);
+    // const newQuizId = new ObjectId().toString();
+    // console.log("Generated Quiz ID:", newQuizId);
+    navigate(`/Kanbas/Courses/${cid}/Quizzes/Edit`);
   };
 
   return (
@@ -100,7 +106,9 @@ export default function Quiz() {
             </span>
           </div>
           <ul className="wd-lessons list-group rounded-0">
-            {quizzes.length > 0 ? (
+            {
+              // quizzes.length > 0 ? (
+
               quizzes.map((quiz: any) => (
                 <li
                   key={quiz._id}
@@ -150,7 +158,10 @@ export default function Quiz() {
                           height: "1.5rem",
                         }}
                       ></div>
-                      <p>{quiz.questions.length} Questions</p>
+                      <p>
+                        {/* {quiz.questions.length} */}
+                        Questions
+                      </p>
                     </div>
                   </div>
 
@@ -199,11 +210,12 @@ export default function Quiz() {
                   </div>
                 </li>
               ))
-            ) : (
-              <p className="text-muted ms-3">
-                No quizzes available for this course.
-              </p>
-            )}
+              // ) : (
+              //   <p className="text-muted ms-3">
+              //     No quizzes available for this course.
+              //   </p>
+              // )
+            }
           </ul>
         </li>
       </ul>

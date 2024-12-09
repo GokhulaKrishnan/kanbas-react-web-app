@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuestion, addQuestion } from "./reducerQuestion"; // Import Redux actions
 import * as questionClient from "./client";
@@ -13,8 +13,11 @@ interface Option {
 
 export default function McqQuestion() {
   const { quesId } = useParams();
+  console.log(quesId);
+  const { cid } = useParams();
   const { quizId } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [question, setQuestion] = useState<any>(null);
   const [title, setTitle] = useState("");
@@ -34,6 +37,7 @@ export default function McqQuestion() {
         const actualQuestion = Array.isArray(fetchedQuestion)
           ? fetchedQuestion[0]
           : fetchedQuestion;
+        console.log(actualQuestion);
 
         setQuestion(actualQuestion);
         setPoints(actualQuestion.points || 0);
@@ -48,10 +52,7 @@ export default function McqQuestion() {
         );
       } else {
         // Initialize default options for a new question
-        setOptions([
-          { id: 1, answer: "", isAnswer: false },
-          { id: 2, answer: "", isAnswer: false },
-        ]);
+        setOptions([{ id: 1, answer: "", isAnswer: false }]);
       }
     } catch (error) {
       console.error("Failed to fetch question details:", error);
@@ -102,6 +103,10 @@ export default function McqQuestion() {
   // Handle Save or Update
   const handleSave = async () => {
     const newQuestion = {
+      _id:
+        quesId === "QuestionEditor"
+          ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
+          : quesId, // Use the existing ID for updates
       questionId:
         quesId === "QuestionEditor"
           ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
@@ -120,8 +125,11 @@ export default function McqQuestion() {
         const createdQuestion = await quizClient.createQuestionsForQuiz(
           newQuestion
         );
+        // Also have to update the quiz question
         dispatch(addQuestion(createdQuestion));
         console.log("New Question Added:", createdQuestion);
+        navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit`);
+        // http://localhost:3000/#/Kanbas/Courses/674f9ae2f84d29eaab2a2398/Quizzes/6754755143a12ed21120b453/Edit
       } else {
         // Update an existing question
         const updatedQuestion = await questionClient.updateQuestions(
@@ -129,6 +137,7 @@ export default function McqQuestion() {
         );
         dispatch(updateQuestion(updatedQuestion));
         console.log("Question Updated:", updatedQuestion);
+        navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit`);
       }
     } catch (error) {
       console.error("Failed to save the question:", error);

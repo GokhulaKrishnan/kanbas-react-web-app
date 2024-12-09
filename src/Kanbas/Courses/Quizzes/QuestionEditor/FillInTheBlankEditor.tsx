@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { updateQuestion, addQuestion } from "./reducerQuestion"; // Redux actions
 import * as questionClient from "./client";
 import * as quizClient from "../client";
@@ -13,7 +13,9 @@ interface Answer {
 export default function FillInTheBlankEditor() {
   const { quesId } = useParams();
   const { quizId } = useParams();
+  const { cid } = useParams();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [question, setQuestion] = useState<any>(null);
   const [title, setTitle] = useState("");
@@ -84,6 +86,10 @@ export default function FillInTheBlankEditor() {
   // Save or Update the question
   const handleSave = async () => {
     const newQuestion = {
+      _id:
+        quesId === "QuestionEditor"
+          ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
+          : quesId, // Use the existing ID for updates
       questionId:
         quesId === "QuestionEditor"
           ? new Date().getTime().toString() // Generate a new ID for new questions
@@ -104,6 +110,7 @@ export default function FillInTheBlankEditor() {
         );
         dispatch(addQuestion(createdQuestion));
         console.log("New Question Added:", createdQuestion);
+        navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit`);
       } else {
         // Update an existing question
         const updatedQuestion = await questionClient.updateQuestions(
@@ -111,6 +118,7 @@ export default function FillInTheBlankEditor() {
         );
         dispatch(updateQuestion(updatedQuestion));
         console.log("Question Updated:", updatedQuestion);
+        navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit`);
       }
     } catch (error) {
       console.error("Failed to save the question:", error);

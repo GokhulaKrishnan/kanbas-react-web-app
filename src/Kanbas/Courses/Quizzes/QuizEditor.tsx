@@ -10,24 +10,29 @@ import { setQuestions } from "./QuestionEditor/reducerQuestion";
 import { useDispatch } from "react-redux";
 
 export default function QuizEditor() {
+  const { cid } = useParams();
   const { quizId } = useParams();
   const dispatch = useDispatch();
-  const selectedQuiz = useSelector(
-    (state: any) => state.quizReducer.selectedQuiz
-  );
-  const quiz = selectedQuiz && selectedQuiz.length > 0 ? selectedQuiz[0] : null;
-  console.log(selectedQuiz);
 
+  // const { assignments } = useSelector((state: any) => state.assignmentReducer);
+
+  // const existingAssignment = assignments.find((a: any) => a._id === aid);
+  const { quizzes } = useSelector((state: any) => state.quizReducer);
+  const quiz = quizzes.find((q: any) => q._id === quizId);
+
+  // const quiz = selectedQuiz && selectedQuiz.length > 0 ? selectedQuiz[0] : null;
+  console.log(quiz);
+  // console.log(quiz.courseId);
   // const questions = quiz.answers;
 
-  const fetchQuestion = async () => {
-    const quiz = await quizClient.findQuestionsForQuiz(quizId as string);
-    console.log("Inside fetchQuestion");
-    dispatch(setQuestions(quiz));
-  };
-  useEffect(() => {
-    fetchQuestion();
-  }, []);
+  // const fetchQuestion = async () => {
+  //   const quiz = await quizClient.findQuestionsForQuiz(quizId as string);
+  //   console.log("Inside fetchQuestion");
+  //   dispatch(setQuestions(quiz));
+  // };
+  // useEffect(() => {
+  //   fetchQuestion();
+  // }, []);
 
   // Fetch questions from Redux store
   const questions = useSelector(
@@ -43,10 +48,10 @@ export default function QuizEditor() {
         0
       );
       setTotalPoints(pointsSum); // Update total points
-      if (quiz) {
-        const updatedQuiz = { ...quiz, points: pointsSum };
-        quizClient.updateQuizz(updatedQuiz);
-      }
+      // if (quiz) {
+      //   const updatedQuiz = { ...quiz, points: pointsSum };
+      //   quizClient.updateQuizz(updatedQuiz);
+      // }
     } else {
       setTotalPoints(0); // Default to 0 if there are no questions
     }

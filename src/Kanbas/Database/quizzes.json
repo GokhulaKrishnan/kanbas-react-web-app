@@ -1,6 +1,5 @@
 [
   {
-    "_id": "Q101",
     "courseId": "RS101",
     "name": "HTML",
     "availability": "closed",
@@ -19,7 +18,6 @@
     "questions": ["Q1011", "Q1012"]
   },
   {
-    "_id": "Q102",
     "courseId": "RS101",
     "name": "CSS Basics",
     "availability": "available",

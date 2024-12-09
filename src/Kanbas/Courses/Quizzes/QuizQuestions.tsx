@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { MdArrowDropDown } from "react-icons/md";
 import { SlQuestion } from "react-icons/sl";
@@ -7,11 +7,21 @@ import { deleteQuestion } from "./QuestionEditor/reducerQuestion"; // Import the
 import * as quizClient from "./client";
 import { setQuestions } from "./QuestionEditor/reducerQuestion";
 import * as questionClient from "./QuestionEditor/client";
+import McqQuestion from "./QuestionEditor/McqQuestion";
+import FillInTheBlankEditor from "./QuestionEditor/FillInTheBlankEditor";
 
 const QuizQuestions = () => {
   const { cid, quizId } = useParams(); // Get course and quiz IDs from the route params
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  const [selectedQuestion, setSelectedQuestion] = useState<any>(null);
+
+  const handleQuestionClick = (question: any) => {
+    setSelectedQuestion(question);
+  };
+
+  // const
 
   const fetchQuestion = async () => {
     const quiz = await quizClient.findQuestionsForQuiz(quizId as string);
@@ -26,6 +36,7 @@ const QuizQuestions = () => {
   const questions = useSelector(
     (state: any) => state.questionReducer.questions
   );
+  console.log(questions);
 
   // const { questions } = useSelector((state: any) => state.quizReducer);
 
@@ -40,14 +51,35 @@ const QuizQuestions = () => {
     );
   };
 
-  const handleDeleteClick = (questionId: string) => {
-    questionClient.deleteQuestion(questionId);
-    dispatch(deleteQuestion(questionId)); // Dispatch the delete action
+  const handleDeleteClick = async (questionId: string) => {
+    if (window.confirm("Are you sure you want to delete this question?")) {
+      try {
+        await questionClient.deleteQuestion(questionId); // Call the client method to delete the quiz
+        dispatch(deleteQuestion(questionId)); // Dispatch the delete action
+        console.log("Quiz deleted successfully.");
+      } catch (error) {
+        console.error("Failed to delete quiz:", error);
+        alert("Failed to delete quiz. Please try again.");
+      }
+    }
   };
 
-  if (questions.length === 0) {
-    return <p>No questions found for this quiz!</p>; // Show this if no questions are found
-  }
+  // if (questions.length === 0) {
+  //   return <p>No questions found for this quiz!</p>; // Show this if no questions are found
+  // }
+
+  // const renderQuestionByType = (question: any) => {
+  //   switch (question.qtype) {
+  //     case "multipleChoice":
+  //       return <McqQuestion question={question} />;
+  //     case "fillIn":
+  //       return <FillInTheBlankEditor question={question} />;
+  //     case "true / false":
+  //       return <TrueFalseEditor question={question} />;
+  //     default:
+  //       return <p>Unsupported question type</p>;
+  //   }
+  // };
 
   return (
     <div>
@@ -77,14 +109,16 @@ const QuizQuestions = () => {
             {/* Map over the filtered questions */}
             {questions.map((question: any, index: number) => (
               <li
-                key={question.questionId}
+                key={question._id}
                 className="wd-lesson wd-assignment-list-item list-group-item p-3 ps-1 d-flex align-items-start"
               >
                 <SlQuestion className="ms-3 me-4 mt-2 fs-3 text-success" />
                 <div className="mt-2">
                   <Link
                     className="wd-assignment-link text-black text-decoration-none d-flex"
-                    to={`/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit/Questions/${question.questionId}`}
+                    to={`/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit/Questions/${question._id}`}
+                    // to="#"
+                    // onClick={() => handleQuestionClick(question)}
                   >
                     <b className="fs-5 me-2 text-danger">
                       Question {index + 1}
@@ -107,7 +141,7 @@ const QuizQuestions = () => {
                 {/* Delete Button */}
                 <button
                   className="btn btn-danger btn-sm ms-auto"
-                  onClick={() => handleDeleteClick(question.questionId)}
+                  onClick={() => handleDeleteClick(question._id)}
                 >
                   Delete
                 </button>

@@ -9,13 +9,15 @@ export const findUsersForCourse = async (courseId: any) => {
 };
 
 // Getting quizzes for the course
-export const findQuizzesForCourse = async (courseId: string) => {
-  const response = await axios.get(`${COURSES_API}/${courseId}/Quizzes`);
+export const findQuizzesForCourse = async (courseId: any) => {
+  const response = await axiosWithCredentials.get(
+    `${COURSES_API}/${courseId}/Quizzes`
+  );
   return response.data;
 };
 
 // Creating new quizzes for the course
-export const createQuizForCourse = async (courseId: string, quiz: any) => {
+export const createQuizForCourse = async (courseId: any, quiz: any) => {
   const response = await axios.post(`${COURSES_API}/${courseId}/Quizzes`, quiz);
   return response.data;
 };

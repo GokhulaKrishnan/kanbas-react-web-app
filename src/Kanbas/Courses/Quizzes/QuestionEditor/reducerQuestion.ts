@@ -7,6 +7,7 @@ interface Answer {
 }
 
 interface Question {
+  _id: string;
   questionId: string;
   title: string;
   quizId: string;
@@ -43,7 +44,7 @@ const questionsSlice = createSlice({
     },
     deleteQuestion: (state, { payload: questionId }) => {
       state.questions = state.questions.filter(
-        (q: Question) => q.questionId !== questionId
+        (q: Question) => q._id !== questionId
       );
     },
     // Set a specific quiz as the selected quiz
@@ -57,7 +58,7 @@ const questionsSlice = createSlice({
     },
     updateQuestion: (state, { payload: question }) => {
       state.questions = state.questions.map((q: Question) =>
-        q.questionId === question.questionId ? question : q
+        q._id === question._id ? question : q
       );
     },
   },

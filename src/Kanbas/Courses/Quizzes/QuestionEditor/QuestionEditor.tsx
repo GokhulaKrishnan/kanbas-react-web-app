@@ -28,23 +28,30 @@ export default function QuestionEditor() {
 
   // Fetch question details from the server
   const fetchQuestionDetails = async () => {
-    try {
-      if (quesId !== "QuestionEditor") {
-        const fetchedQuestion = await questionClient.findQuestionById(
-          quesId as string
-        );
-        setQuestion(fetchedQuestion);
-        setQuestionType(fetchedQuestion.qtype || "Multiple Choice");
-        // setPoints(fetchedQuestion.points || 4);
-        setIsEditableType(false);
-      } else {
-        // For new questions, allow editing the type
-        setIsEditableType(true);
-      }
-    } catch (error) {
-      console.error("Failed to fetch question details:", error);
+    // try {
+    if (quesId !== "QuestionEditor") {
+      const fetchedQuestion = await questionClient.findQuestionById(quesId);
+
+      const question = Array.isArray(fetchedQuestion)
+        ? fetchedQuestion[0]
+        : fetchedQuestion;
+      console.log(question);
+      setQuestion(question);
+      setQuestionType(question.qtype || "Multiple Choice");
+      // setPoints(fetchedQuestion.points || 4);
+      setIsEditableType(false);
     }
+    // else {
+    //   // For new questions, allow editing the type
+    //   setIsEditableType(true);
+    // }
+    // }
+    // catch (error) {
+    //   console.error("Failed to fetch question details:", error);
+    // }
   };
+
+  console.log(question);
 
   useEffect(() => {
     fetchQuestionDetails(); // Fetch question details when the component loads
@@ -54,22 +61,17 @@ export default function QuestionEditor() {
   //   (state: any) => state.questionReducer.selectedQuestion
   // );
 
-  // const question =
-  //   selectedQuestion && selectedQuestion.length > 0
-  //     ? selectedQuestion[0]
-  //     : null;
-
   // Manage the state of question type and points
   const [questionType, setQuestionType] = useState(
-    question?.qtype || "Multiple Choice"
+    question?.qtype || "multipleChoice"
   );
 
   // const [points, setPoints] = useState(question?.points || 4);
 
   const renderQuestionType = () => {
-    if (questionType === "Multiple Choice") {
+    if (questionType === "multipleChoice") {
       return <McqQuestion />;
-    } else if (questionType === "True/False") {
+    } else if (questionType === "true / false") {
       return <TrueFalseEditor />;
     } else {
       return <FillInTheBlankEditor />;
@@ -125,9 +127,9 @@ export default function QuestionEditor() {
             onChange={(e) => setQuestionType(e.target.value)} // Update the question type
             disabled={!isEditableType}
           >
-            <option value="Multiple Choice">Multiple Choice</option>
-            <option value="True/False">True/False</option>
-            <option value="Short Answer">Fill In The Blank</option>
+            <option value="multipleChoice">Multiple Choice</option>
+            <option value="true / false">True/False</option>
+            <option value="fillIn">Fill In The Blank</option>
           </select>
         </div>
         {/* <div>

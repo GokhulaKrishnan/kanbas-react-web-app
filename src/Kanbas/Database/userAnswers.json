@@ -1,0 +1,22 @@
+[
+  {
+    "quizId": "67528da3467db88d36dc3fbd",
+    "userId": "674aa4f101f6e665184f3e15",
+    "answers": [
+      {
+        "questionId": "qid",
+        "answer": "A"
+      },
+      {
+        "questionId": "qid",
+        "answer": "B"
+      },
+      {
+        "questionId": "qid",
+        "answer": "C"
+      }
+    ],
+    "timestamp": "2024-12-07T12:00:00Z",
+    "score": 8
+  }
+]

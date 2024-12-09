@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { updateQuestion, addQuestion } from "./reducerQuestion"; // Redux actions
 import * as questionClient from "./client";
 import * as quizClient from "../client";
@@ -8,8 +8,10 @@ import * as quizClient from "../client";
 export default function TrueFalseEditor() {
   const { quesId } = useParams();
   const { quizId } = useParams();
+  const { cid } = useParams();
 
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const [question, setQuestion] = useState<any>(null);
   const [title, setTitle] = useState("");
@@ -30,18 +32,20 @@ export default function TrueFalseEditor() {
           ? fetchedQuestion[0]
           : fetchedQuestion;
 
+        console.log(actualQuestion);
+
         setQuestion(actualQuestion);
         setTitle(actualQuestion.title || "");
         setQuestionText(actualQuestion.question || "");
         setPoints(actualQuestion.points || 3);
-        setSelectedAnswer(
-          actualQuestion.answer.find((a: any) => a.isAnswer)?.answer || "True"
-        );
+        setSelectedAnswer(actualQuestion.answer.find((a: any) => a.isAnswer));
       }
     } catch (error) {
       console.error("Failed to fetch question details:", error);
     }
   };
+
+  console.log(selectedAnswer);
 
   useEffect(() => {
     fetchQuestionDetails();
@@ -55,13 +59,17 @@ export default function TrueFalseEditor() {
   // Save or Update the question
   const handleSave = async () => {
     const newQuestion = {
+      _id:
+        quesId === "QuestionEditor"
+          ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
+          : quesId, // Use the existing ID for updates
       questionId:
         quesId === "QuestionEditor"
           ? new Date().getTime().toString() // Generate a new ID if it's "QuestionEditor"
           : quesId, // Use the existing ID for updates
       title,
       quizId,
-      qtype: "true/false",
+      qtype: "true / false",
       question: questionText,
       points,
       answer: [
@@ -78,6 +86,7 @@ export default function TrueFalseEditor() {
         );
         dispatch(addQuestion(createdQuestion));
         console.log("New Question Added:", createdQuestion);
+        navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit`);
       } else {
         // Update an existing question
         const updatedQuestion = await questionClient.updateQuestions(
@@ -85,6 +94,7 @@ export default function TrueFalseEditor() {
         );
         dispatch(updateQuestion(updatedQuestion));
         console.log("Question Updated:", updatedQuestion);
+        navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}/Edit`);
       }
     } catch (error) {
       console.error("Failed to save the question:", error);
@@ -144,23 +154,19 @@ export default function TrueFalseEditor() {
           {/* True Option */}
           <div
             className={`d-flex align-items-center p-2 mb-2 ${
-              selectedAnswer === "True" ? "border border-success rounded" : ""
+              selectedAnswer ? "border border-success rounded" : ""
             }`}
             style={{ cursor: "pointer" }}
             onClick={() => handleAnswerSelection("True")}
           >
             <div
               className={`me-2 ${
-                selectedAnswer === "True" ? "text-success" : "text-muted"
+                selectedAnswer ? "text-success" : "text-muted"
               }`}
             >
-              {selectedAnswer === "True" ? "✓" : "→"}
+              {selectedAnswer ? "✓" : "→"}
             </div>
-            <span
-              className={`fw-bold ${
-                selectedAnswer === "True" ? "text-success" : ""
-              }`}
-            >
+            <span className={`fw-bold ${selectedAnswer ? "text-success" : ""}`}>
               True
             </span>
           </div>
@@ -168,22 +174,20 @@ export default function TrueFalseEditor() {
           {/* False Option */}
           <div
             className={`d-flex align-items-center p-2 ${
-              selectedAnswer === "False" ? "border border-success rounded" : ""
+              !selectedAnswer ? "border border-success rounded" : ""
             }`}
             style={{ cursor: "pointer" }}
             onClick={() => handleAnswerSelection("False")}
           >
             <div
               className={`me-2 ${
-                selectedAnswer === "False" ? "text-success" : "text-muted"
+                !selectedAnswer ? "text-success" : "text-muted"
               }`}
             >
-              {selectedAnswer === "False" ? "✓" : "→"}
+              {!selectedAnswer ? "✓" : "→"}
             </div>
             <span
-              className={`fw-bold ${
-                selectedAnswer === "False" ? "text-success" : ""
-              }`}
+              className={`fw-bold ${!selectedAnswer ? "text-success" : ""}`}
             >
               False
             </span>
