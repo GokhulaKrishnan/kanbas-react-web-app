@@ -236,7 +236,7 @@
 
 // export default Details;
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { updateQuiz } from "./reducerQuiz"; // Import the updateQuiz action
 import { CgShapeHalfCircle } from "react-icons/cg";
@@ -248,7 +248,7 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
   const { cid } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  console.log(quizDetails);
+  console.log("quizDetails", quizDetails);
   // const selectedQuiz = useSelector(
   //   (state: any) => state.quizReducer.selectedQuiz
   // );
@@ -270,7 +270,32 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
     dueDate: quizDetails?.dueDate || "2024-11-01",
     availableDate: quizDetails?.availableDate || "2024-10-01",
     untilDate: quizDetails?.untilDate || "2024-12-01",
+    points: quizDetails?.points || 15,
+    attempts: quizDetails?.attempts || 0,
   });
+
+  // Function to determine availability
+  const calculateAvailability = () => {
+    const currentDate = new Date();
+    const availableFrom = new Date(details.availableDate);
+    const availableUntil = new Date(details.untilDate);
+
+    if (currentDate < availableFrom) {
+      return "Not Available"; // Not yet available
+    } else if (currentDate > availableUntil) {
+      return "Closed"; // Past the available date
+    } else {
+      return "Available"; // Currently available
+    }
+  };
+
+  useEffect(() => {
+    const updatedAvailability = calculateAvailability();
+    setDetails((prevDetails) => ({
+      ...prevDetails,
+      availability: updatedAvailability,
+    }));
+  }, [details.availableDate, details.untilDate]);
 
   // Handle input changes
   const handleInputChange = (
@@ -341,6 +366,8 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
       dueDate: quizDetails?.dueDate || "",
       availableDate: quizDetails?.availableDate || "",
       untilDate: quizDetails?.untilDate || "",
+      points: quizDetails?.points || 15,
+      attempts: quizDetails?.attempts || 0,
     });
     // navigate(`/Kanbas/Courses/${cid}/Assignments`);
     console.log("Edit Cancelled");
@@ -503,6 +530,22 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
                   Allow Multiple Attempts
                 </label>
               </div>
+              {details.multipleAttempts && (
+                <div className="mt-2">
+                  <label htmlFor="num-attempts" className="form-label">
+                    Number of Attempts
+                  </label>
+                  <input
+                    type="number"
+                    id="num-attempts"
+                    name="attempts"
+                    value={details.attempts || 1}
+                    className="form-control"
+                    min="1"
+                    onChange={handleInputChange}
+                  />
+                </div>
+              )}
             </div>
           </div>
 
@@ -520,6 +563,7 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
                   id="wd-assign-to"
                   className="form-control"
                   type="text"
+                  name="assignTo"
                   value={details.assignTo}
                   onChange={handleInputChange}
 
@@ -533,8 +577,9 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
                     <input
                       type="date"
                       id="wd-due"
+                      name="dueDate"
                       className="form-control col-9"
-                      value={details.dueDate || ""}
+                      value={details.dueDate}
                       onChange={handleInputChange}
 
                       // readOnly // Make it editable if needed
@@ -549,9 +594,10 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
                     </label>
                     <input
                       type="date"
+                      name="availableFrom"
                       id="wd-available-from"
                       className="form-control"
-                      value={details.availableDate || ""}
+                      value={details.availableDate}
                       onChange={handleInputChange}
 
                       // readOnly // Make it editable if needed
@@ -564,8 +610,9 @@ const Details = ({ quizDetails }: { quizDetails: any }) => {
                     <input
                       type="date"
                       id="wd-until"
+                      name="untilDate"
                       className="form-control"
-                      value={details.untilDate || ""}
+                      value={details.untilDate}
                       onChange={handleInputChange}
 
                       // readOnly // Make it editable if needed

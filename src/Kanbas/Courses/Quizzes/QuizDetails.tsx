@@ -111,7 +111,7 @@ export default function QuizDetails({ role = "faculty" }) {
 
   // const quiz = selectedQuiz && selectedQuiz.length > 0 ? selectedQuiz[0] : null;
 
-  console.log(quiz);
+  console.log("Current quiz", quiz);
 
   // Show loading or fallback if quiz is not yet loaded
   if (!quiz) {
@@ -178,29 +178,31 @@ export default function QuizDetails({ role = "faculty" }) {
       {/* Button Section */}
       <div className="d-flex justify-content-center">
         {(currentUser.role === "STUDENT" || currentUser.role === "TA") &&
-          (userAttempts.length > 0 ? (
-            <>
+        userAttempts.length > 0 ? (
+          <>
+            {quiz?.attempts > 0 && ( // Display "Retest" only if remaining attempts are greater than 1
               <button
                 className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
                 onClick={handlePreviewClick}
               >
                 Retest
               </button>
-              <button
-                className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
-                onClick={handlePreviewAttempt}
-              >
-                Preview
-              </button>
-            </>
-          ) : (
+            )}
             <button
               className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
-              onClick={handlePreviewClick}
+              onClick={handlePreviewAttempt}
             >
-              Start Quiz
+              Preview
             </button>
-          ))}
+          </>
+        ) : (
+          <button
+            className="border p-1 pe-3 ps-3 me-2 rounded btn btn-danger"
+            onClick={handlePreviewClick}
+          >
+            Start Quiz
+          </button>
+        )}
 
         {/* For FACULTY or ADMIN */}
         {(currentUser.role === "FACULTY" || currentUser.role === "ADMIN") &&
@@ -295,7 +297,7 @@ export default function QuizDetails({ role = "faculty" }) {
                 <div className="col-6  d-flex justify-content-end">
                   <strong>How Many Attempts:</strong>
                 </div>
-                <div className="col-6">3</div>
+                <div className="col-6">{quiz.attempts}</div>
               </>
             )}
 

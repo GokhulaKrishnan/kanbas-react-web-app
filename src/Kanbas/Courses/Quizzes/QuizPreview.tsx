@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 // import { questions } from "../../Database";
 import { useDispatch, useSelector } from "react-redux";
 import * as questionClient from "./QuestionEditor/client";
@@ -29,11 +29,18 @@ interface Attempt {
 export default function QuizPreview() {
   const { quizId } = useParams();
   const { attemptId } = useParams();
+  const navigate = useNavigate();
 
   console.log(quizId);
   console.log(attemptId);
+
+  const { quizzes } = useSelector((state: any) => state.quizReducer);
+  const quiz = quizzes.find((q: any) => q._id === quizId);
   const dispatch = useDispatch();
   const { currentUser } = useSelector((state: any) => state.accountReducer); // Get current user
+  const { cid } = useParams();
+
+  console.log("Current quiz", quiz);
 
   // const ques = useSelector((state: any) => state.questionReducer.questions);
   // const quizQuestions = ques.filter((q: any) => q.quizId === quizId); // Filter questions by quizId
@@ -44,6 +51,13 @@ export default function QuizPreview() {
   const [score, setScore] = useState(0);
   const [existingAttempt, setExistingAttempt] = useState<Attempt[]>([]);
   const [disable, setDisable] = useState(false);
+  const [back, setBack] = useState(false);
+  let [att, setAtt] = useState<number | null>(null);
+  useEffect(() => {
+    if (quiz) {
+      setAtt(quiz.attempts);
+    }
+  }, [quiz]);
 
   // const hasExistingAttempt = userAttempts.length > 0;
   // const retriesLeft = 3 - userAttempts.length; // Assume max 3 attempts
@@ -129,43 +143,106 @@ export default function QuizPreview() {
   };
 
   const handleSubmit = () => {
-    const currentTime = new Date().toLocaleString(); // Get current date and time in readable format
+    setAtt(att ? att-- : null);
+    console.log("Attempt Remaining", att);
+    const currentTime = new Date().toLocaleString(); // Get current date and time
     setTime(currentTime); // Update state with the current time
 
     let calculatedScore = 0;
-
-    // Iterate through the submitted answers
+    console.log(answers);
+    // Iterate through submitted answers
     answers.forEach((submittedAnswer) => {
       const question = quizQuestions.find(
         (q: any) => q._id === submittedAnswer.questionId
       );
+
       console.log(question);
-
       if (question) {
-        // Check if the submitted answer matches the correct answer(s)
-        const correctAnswers = question.answer
-          .filter((opt: any) => opt.isAnswer)
-          .map((opt: any) => opt.answer);
+        console.log("Inside Question");
+        // Extract correct answers based on question type
+        let correctAnswers: string[] = [];
 
-        console.log(correctAnswers);
+        // if (Array.isArray(question.answer)) {
+        //   correctAnswers = question.answer
+        //     .filter((opt: any) => opt.isAnswer)
+        //     .map((opt: any) => opt.answer);
+        // }
 
-        if (
-          JSON.stringify(correctAnswers.sort()) ===
-          JSON.stringify(submittedAnswer.answer.sort())
-        ) {
-          console.log("Iniside comparision");
-          console.log(question.points);
+        // // console.log(correctAnswers);
+        // Check if the submitted answer matches the correct answers
+        // let isCorrect = false;
+        let isCorrect = false;
 
-          // Add points if the answer is correct
-          calculatedScore += question.points;
+        switch (question.qtype) {
+          case "multipleChoice":
+            if (Array.isArray(question.answer)) {
+              correctAnswers = question.answer
+                .filter((opt: any) => opt.isAnswer)
+                .map((opt: any) => opt.answer);
+            }
+
+            isCorrect =
+              JSON.stringify(correctAnswers.sort()) ===
+              JSON.stringify(submittedAnswer.answer.sort());
+            console.log(isCorrect);
+
+            if (isCorrect) {
+              calculatedScore += question.points;
+            }
+            break;
+
+          case "true / false":
+            if (Array.isArray(question.answer)) {
+              correctAnswers = question.answer[0].isAnswer;
+            }
+            console.log("t/f", correctAnswers);
+            console.log("t/f   ", submittedAnswer.answer[0]);
+            isCorrect =
+              question.answer[0].isAnswer ===
+              (submittedAnswer.answer[0].toLowerCase() === "true");
+
+            console.log("Checking", isCorrect);
+            if (isCorrect) {
+              calculatedScore += question.points;
+            }
+            // correctAnswers.length === 1 &&
+            //   correctAnswers[0] === submittedAnswer.answer[0];
+            break;
+
+          case "fillIn":
+            // Ensure correctAnswers is an array of answer strings
+            correctAnswers = question.answer
+              .filter((opt: any) => opt.isAnswer) // Filter correct answers
+              .map((opt: any) => opt.answer.trim().toLowerCase()); // Extract and normalize the answers
+
+            // Compare if the submitted answer is included in the correct answers array
+            isCorrect = correctAnswers.includes(
+              (submittedAnswer.answer[0] || "").trim().toLowerCase()
+            );
+
+            if (isCorrect) {
+              calculatedScore += question.points;
+            }
+            break;
+
+          default:
+            console.warn(
+              "Unsupported question type for scoring:",
+              question.qtype
+            );
         }
-        // console.log(calculatedScore);
-        setScore(calculatedScore);
+
+        // if (isCorrect) {
+        //   console.log("1");
+        //   calculatedScore += question.points; // Add points for correct answers
+        // }
       }
     });
-    console.log(score);
 
-    // Creating a new attempt
+    console.log("Final Calculated Score:", calculatedScore);
+    setScore(calculatedScore); // Update score state
+
+    // Create a new attempt object
     const newAttempt: Attempt = {
       _id: userAttempts[0]?._id ?? "", // Use existing ID if available
       quizId: quizId as string,
@@ -175,20 +252,24 @@ export default function QuizPreview() {
       score: calculatedScore,
     };
 
+    // Update or create a new attempt
     if (userAttempts && userAttempts.length > 0) {
+      quizClient.updateQuizz({ ...quiz, attempts: att });
       quizClient.updateAttempt(newAttempt);
-      console.log("Inside update attempt block");
+      console.log("Updated attempt:", newAttempt);
     } else {
-      // Create an attempt
       quizClient.createAttempt(newAttempt);
-      console.log("An attempt created:", newAttempt);
+      console.log("Created new attempt:", newAttempt);
     }
 
-    // setScore(calculatedScore); // Update the score state
-    // console.log("Quiz Submitted at:", currentTime);
-    // console.log("Score:", score);
+    setBack(!back);
   };
-  console.log(score);
+
+  const handleReturn = () => {
+    navigate(`/Kanbas/Courses/${cid}/Quizzes/${quizId}`);
+  };
+
+  // console.log(score);
 
   const handleEditQuiz = () => {
     console.log("Editing Quiz");
@@ -234,6 +315,11 @@ export default function QuizPreview() {
     // const isChecked = (option: string) =>
     //   existingAnswer?.answer.includes(option);
 
+    if (Array.isArray(question.answer) && question.answer.length > 0) {
+      console.log(question.answer[0].isAnswer);
+    } else {
+      console.log("question.answer is not a valid array or is empty.");
+    }
     const userAnswer = userAttempts[0]?.answers.find(
       (answer) => answer.questionId === question._id
     );
@@ -245,38 +331,57 @@ export default function QuizPreview() {
         return (
           <div>
             {question.answer.map((option: any, index: any) => (
-              <div className="form-check" key={index}>
+              <div
+                className={`form-check p-2 rounded ${
+                  attemptId && option.isAnswer
+                    ? "bg-success bg-opacity-25 border border-success"
+                    : ""
+                } ${
+                  attemptId &&
+                  userSelectedAnswer.includes(option.answer) &&
+                  !option.isAnswer
+                    ? "bg-danger bg-opacity-25 border border-danger"
+                    : ""
+                }`}
+                key={index}
+              >
                 <input
                   type="radio"
                   id={`option-${index}`}
                   name={`question-${question._id}`}
                   className="form-check-input"
-                  // checked={isChecked(option.answer)} // Preload existing answers
                   disabled={disable} // Disable inputs
                   onChange={() =>
                     handleAnswerChange(question._id, option.answer)
                   }
-                  // checked={
-                  //   attemptId // Check only if `attemptId` exists
-                  //     ? userSelectedAnswer.includes(option.answer)
-                  //     : false
-                  // }
-                  // {...(attemptId && {
-                  //   checked: userSelectedAnswer.includes(option.answer) || "",
-                  // })}
                   checked={
                     attemptId
                       ? userSelectedAnswer.includes(option.answer)
                       : false
                   }
-                  // checked={
-                  //   answers.find((ans) => ans.questionId === question._id)
-                  //     ?.answer?.[0] === option.answer
-                  // } // Handle answer selection
-
-                  // disabled
                 />
-                <label htmlFor={`option-${index}`} className="form-check-label">
+                <label
+                  htmlFor={`option-${index}`}
+                  className={`form-check-label ${disable ? "text-body" : ""}`}
+                >
+                  {attemptId && option.isAnswer && (
+                    <span
+                      className="me-2 text-success fw-bold"
+                      aria-label="Correct Answer"
+                    >
+                      ✓
+                    </span>
+                  )}
+                  {attemptId &&
+                    userSelectedAnswer.includes(option.answer) &&
+                    !option.isAnswer && (
+                      <span
+                        className="me-2 text-danger fw-bold"
+                        aria-label="Your Answer"
+                      >
+                        ✗
+                      </span>
+                    )}
                   {option.answer}
                 </label>
               </div>
@@ -285,26 +390,68 @@ export default function QuizPreview() {
         );
 
       case "fillIn":
+        // {correctAnswers = question.answer
+        // .filter((opt: any) => opt.isAnswer) // Filter correct answers
+        // .map((opt: any) => opt.answer.trim().toLowerCase());}
         return (
           <div>
             <input
               type="text"
-              className="form-control"
+              className={`form-control ${
+                attemptId &&
+                question.answer
+                  .filter((opt: any) => opt.isAnswer) // Filter correct answers
+                  .map((opt: any) => opt.answer.trim().toLowerCase())
+              }
+                  ? "border-success"
+                  : ""
+              } ${
+                attemptId &&
+                !question.answer
+                  .filter((opt: any) => opt.isAnswer) // Filter correct answers
+                  .map((opt: any) => opt.answer.trim().toLowerCase())
+              }
+                  ? "border-danger"
+                  : ""
+              }`}
               placeholder="Type your answer here..."
-              // value={existingAttempt ? existingAttempt[0].}
               disabled={disable} // Disable inputs
               onChange={(e) =>
                 handleAnswerChange(question._id, e.target.value.trim())
               }
               {...(attemptId && { value: userSelectedAnswer[0] || "" })}
             />
+            {attemptId && question.answer.some((ans: any) => ans.isAnswer) && (
+              <p className="text-success mt-2">
+                Correct Answer:{" "}
+                {question.answer
+                  .filter((ans: any) => ans.isAnswer)
+                  .map((ans: any) => ans.answer)
+                  .join(", ")}
+              </p>
+            )}
           </div>
         );
 
       case "true / false":
         return (
           <div>
-            <div className="form-check">
+            <div
+              // key={index}
+              className={`form-check ${
+                attemptId &&
+                Array.isArray(question.answer) &&
+                question.answer.length > 0 &&
+                question.answer[0].isAnswer &&
+                userSelectedAnswer.includes("True")
+                  ? "bg-success text-white" // Correctly answered as True
+                  : attemptId &&
+                    userSelectedAnswer.includes("True") &&
+                    !question.answer[0].isAnswer
+                  ? "bg-danger text-white" // Incorrectly answered as True
+                  : ""
+              }`}
+            >
               <input
                 type="radio"
                 id="true"
@@ -320,7 +467,21 @@ export default function QuizPreview() {
                 True
               </label>
             </div>
-            <div className="form-check">
+            <div
+              className={`form-check ${
+                attemptId &&
+                Array.isArray(question.answer) &&
+                question.answer.length > 0 &&
+                !question.answer[0].isAnswer &&
+                userSelectedAnswer.includes("False")
+                  ? "bg-success text-white" // Correctly answered as False
+                  : attemptId &&
+                    userSelectedAnswer.includes("False") &&
+                    question.answer[0].isAnswer
+                  ? "bg-danger text-white" // Incorrectly answered as False
+                  : ""
+              }`}
+            >
               <input
                 type="radio"
                 id="false"
@@ -407,10 +568,21 @@ export default function QuizPreview() {
       {/* Quiz Save Info */}
       <div className="d-flex justify-content-between align-items-center mt-3">
         <p>Quiz saved at 8:19am</p>
-        {!attemptId && currentIndex === quizQuestions.length - 1 && (
+        {!back && !attemptId && currentIndex === quizQuestions.length - 1 && (
           <button className="btn btn-success" onClick={handleSubmit}>
             Submit Quiz
           </button>
+        )}
+        {back && (
+          <button className="btn btn-primary" onClick={handleReturn}>
+            Return
+          </button>
+        )}
+        {(score !== null || attemptId) && (
+          <div>
+            {/* Score will be displayed after submission in attempt mode, or immediately in preview mode */}
+            <h3>Your Score: {attemptId ? userAttempts[0]?.score : score}</h3>
+          </div>
         )}
       </div>
 

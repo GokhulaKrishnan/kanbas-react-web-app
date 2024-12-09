@@ -48,10 +48,10 @@ export default function QuizEditor() {
         0
       );
       setTotalPoints(pointsSum); // Update total points
-      // if (quiz) {
-      //   const updatedQuiz = { ...quiz, points: pointsSum };
-      //   quizClient.updateQuizz(updatedQuiz);
-      // }
+      if (quiz) {
+        const updatedQuiz = { ...quiz, points: pointsSum };
+        quizClient.updateQuizz(updatedQuiz);
+      }
     } else {
       setTotalPoints(0); // Default to 0 if there are no questions
     }

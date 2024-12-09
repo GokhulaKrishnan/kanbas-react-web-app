@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 // import { quizzes } from "../../Database";
 import * as quizClient from "./client";
 import * as coursesClient from "../client";
-import { setQuizzes, deleteQuiz } from "./reducerQuiz";
+import { setQuizzes, deleteQuiz, updateQuiz } from "./reducerQuiz";
 import { useDispatch, useSelector } from "react-redux";
 // import { ObjectId } from "mongodb";
 
@@ -13,6 +13,8 @@ export default function Quiz() {
   const { cid } = useParams(); // Get course ID from the route params
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { currentUser } = useSelector((state: any) => state.accountReducer); // Get current user
+
   // const [quizzesList, setQuizzesList] = useState(quizzes);
 
   // const filteredQuizzes = quizzesList.filter(
@@ -50,13 +52,24 @@ export default function Quiz() {
     }
   };
 
-  // const togglePublish = (quizId: any) => {
-  //   setQuizzesList(
-  //     quizzesList.map((quiz: any) =>
-  //       quiz._id === quizId ? { ...quiz, published: !quiz.published } : quiz
-  //     )
-  //   );
-  // };
+  const togglePublish = async (quiz: any) => {
+    if (window.confirm("Are you sure you want to publish this quiz?")) {
+      try {
+        const newQuiz = { ...quiz, published: !quiz.published };
+        await quizClient.updateQuizz(newQuiz); // Call the client method to delete the quiz
+        dispatch(updateQuiz(newQuiz)); // Update Redux state by dispatching the delete
+        console.log("Quiz updated successfully.", newQuiz);
+      } catch (error) {
+        console.error("Failed to publish quiz:", error);
+        alert("Failed to delete quiz. Please try again.");
+      }
+    }
+    // setQuizzesList(
+    //   quizzesList.map((quiz: any) =>
+    //     quiz._id === quizId ? { ...quiz, published: !quiz.published } : quiz
+    //   )
+    // );
+  };
 
   const openQuizDetails = async () => {
     // const response = await quizClient.getId();
@@ -66,6 +79,8 @@ export default function Quiz() {
     // console.log("Generated Quiz ID:", newQuizId);
     navigate(`/Kanbas/Courses/${cid}/Quizzes/Edit`);
   };
+  console.log(currentUser.role);
+  console.log("Printing Quizzes", quizzes);
 
   return (
     <div id="wd-quizzes">
@@ -81,15 +96,17 @@ export default function Quiz() {
             />
           </form>
         </div>
-        <div className="d-flex">
-          <button
-            id="wd-add-quiz"
-            className="btn btn-m btn-danger me-1"
-            onClick={openQuizDetails}
-          >
-            + Quiz
-          </button>
-        </div>
+        {currentUser.role === "FACULTY" && (
+          <div className="d-flex">
+            <button
+              id="wd-add-quiz"
+              className="btn btn-m btn-danger me-1"
+              onClick={openQuizDetails}
+            >
+              + Quiz
+            </button>
+          </div>
+        )}
       </div>
       <hr />
 
@@ -109,107 +126,117 @@ export default function Quiz() {
             {
               // quizzes.length > 0 ? (
 
-              quizzes.map((quiz: any) => (
-                <li
-                  key={quiz._id}
-                  className="wd-quiz wd-quiz-list-item list-group-item p-3 ps-1 d-flex align-items-start"
-                >
-                  {/* Publish Icon */}
-                  <MdOutlineRocketLaunch
-                    className={`ms-3 me-4 mt-4 fs-3 ${
-                      quiz.published ? "text-success" : "text-danger"
-                    }`}
-                  />
+              quizzes
+                .filter(
+                  (quiz: any) =>
+                    currentUser.role === "FACULTY" ||
+                    currentUser.role === "TA" ||
+                    (currentUser.role === "STUDENT" && quiz?.published)
+                )
+                .map((quiz: any) => (
+                  <li
+                    key={quiz._id}
+                    className="wd-quiz wd-quiz-list-item list-group-item p-3 ps-1 d-flex align-items-start"
+                  >
+                    {/* Publish Icon */}
+                    <MdOutlineRocketLaunch
+                      className={`ms-3 me-4 mt-4 fs-3 ${
+                        quiz.published ? "text-success" : "text-danger"
+                      }`}
+                      onClick={() => togglePublish(quiz)}
+                    />
 
-                  {/* Quiz Details */}
-                  <div className="mt-2">
-                    <Link
-                      className="wd-quiz-link text-black text-decoration-none"
-                      to={`/Kanbas/Courses/${cid}/Quizzes/${quiz._id}`}
-                    >
-                      <b className="fs-4">{quiz.name}</b>
-                    </Link>
-                    <div className="ms-auto d-flex text-secondary">
-                      <p>
-                        <b>{quiz.availability}</b>
-                      </p>
-                      <div
-                        className="vr me-2 ms-3"
-                        style={{
-                          borderLeft: "3px solid black",
-                          height: "1.5rem",
-                        }}
-                      ></div>
-                      <p>
-                        <b>Due:</b> {quiz.dueDate}
-                      </p>
-                      <div
-                        className="vr me-2 ms-3"
-                        style={{
-                          borderLeft: "3px solid black",
-                          height: "1.5rem",
-                        }}
-                      ></div>
-                      <p>{quiz.points} pts</p>
-                      <div
-                        className="vr me-2 ms-3"
-                        style={{
-                          borderLeft: "3px solid black",
-                          height: "1.5rem",
-                        }}
-                      ></div>
-                      <p>
-                        {/* {quiz.questions.length} */}
-                        Questions
-                      </p>
+                    {/* Quiz Details */}
+                    <div className="mt-2">
+                      <Link
+                        className="wd-quiz-link text-black text-decoration-none"
+                        to={`/Kanbas/Courses/${cid}/Quizzes/${quiz._id}`}
+                      >
+                        <b className="fs-4">{quiz.name}</b>
+                      </Link>
+                      <div className="ms-auto d-flex text-secondary">
+                        <p>
+                          <b>{quiz.availability}</b>
+                        </p>
+                        <div
+                          className="vr me-2 ms-3"
+                          style={{
+                            borderLeft: "3px solid black",
+                            height: "1.5rem",
+                          }}
+                        ></div>
+                        <p>
+                          <b>Due:</b> {quiz.dueDate}
+                        </p>
+                        <div
+                          className="vr me-2 ms-3"
+                          style={{
+                            borderLeft: "3px solid black",
+                            height: "1.5rem",
+                          }}
+                        ></div>
+                        <p>{quiz?.points} pts</p>
+                        <div
+                          className="vr me-2 ms-3"
+                          style={{
+                            borderLeft: "3px solid black",
+                            height: "1.5rem",
+                          }}
+                        ></div>
+                        <p>
+                          {/* {quiz.questions.length} */}
+                          Questions
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Context Menu */}
-                  <div className="ms-auto">
-                    <div className="dropdown">
-                      <button
-                        className="btn border border-secondary bg-light p-2"
-                        type="button"
-                        id={`dropdownMenuButton-${quiz._id}`}
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        <BsThreeDotsVertical />
-                      </button>
-                      <ul
-                        className="dropdown-menu"
-                        aria-labelledby={`dropdownMenuButton-${quiz._id}`}
-                      >
-                        <li>
+                    {/* Context Menu */}
+                    {currentUser.role === "FACULTY" && (
+                      <div className="ms-auto">
+                        <div className="dropdown">
                           <button
-                            className="dropdown-item"
-                            onClick={() => handleEdit(quiz._id)}
+                            className="btn border border-secondary bg-light p-2"
+                            type="button"
+                            id={`dropdownMenuButton-${quiz._id}`}
+                            data-bs-toggle="dropdown"
+                            aria-expanded="false"
                           >
-                            Edit
+                            <BsThreeDotsVertical />
                           </button>
-                        </li>
-                        <li>
-                          <button
-                            className="dropdown-item"
-                            onClick={() => handleDelete(quiz._id)}
+                          <ul
+                            className="dropdown-menu"
+                            aria-labelledby={`dropdownMenuButton-${quiz._id}`}
                           >
-                            Delete
-                          </button>
-                        </li>
-                        <li>
-                          <button
-                            className="dropdown-item"
-                            // onClick={() => togglePublish(quiz._id)}
-                          >
-                            {quiz.published ? "Unpublish" : "Publish"}
-                          </button>
-                        </li>
-                      </ul>
-                    </div>
-                  </div>
-                </li>
-              ))
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => handleEdit(quiz._id)}
+                              >
+                                Edit
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => handleDelete(quiz._id)}
+                              >
+                                Delete
+                              </button>
+                            </li>
+                            <li>
+                              <button
+                                className="dropdown-item"
+                                onClick={() => togglePublish(quiz)}
+                              >
+                                {quiz.published ? "Unpublish" : "Publish"}
+                              </button>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                ))
               // ) : (
               //   <p className="text-muted ms-3">
               //     No quizzes available for this course.
